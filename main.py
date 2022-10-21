@@ -29,7 +29,37 @@ def read_data():
     # print(sheet4)
     # print(sheet5)
 # Press the green button in the gutter to run the script.
+import pyecharts.options as opts
+from pyecharts.charts import MapGlobe
+from pyecharts.faker import POPULATION
+
+def test():
+    data = [x for _, x in POPULATION[1:]]
+    low, high = min(data), max(data)
+    c = (
+        MapGlobe()
+        .add_schema()
+        .add(
+            maptype="world",
+            series_name="World Population",
+            data_pair=POPULATION[1:],
+            is_map_symbol_show=False,
+            label_opts=opts.LabelOpts(is_show=False),
+        )
+        .set_global_opts(
+            visualmap_opts=opts.VisualMapOpts(
+                min_=low,
+                max_=high,
+                range_text=["max", "min"],
+                is_calculable=True,
+                range_color=["lightskyblue", "yellow", "orangered"],
+            )
+        )
+        .render("map_globe_base.html")
+    )
+
 if __name__ == '__main__':
-    read_data()
+    test()
+    # read_data()
 
 # See PyCharm help at https://www.jetbrains.com/help/pycharm/
