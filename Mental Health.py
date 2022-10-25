@@ -2,24 +2,17 @@
 Author: Tao
 Date: 2022-10-21 11:00:14
 LastEditors: Tao
-LastEditTime: 2022-10-21 16:28:08
+LastEditTime: 2022-10-25 16:18:23
 Description:
 Email: 202203580@post.au.dk
 Copyright (c) 2022 by Tao Tang, All Rights Reserved.
 '''
-'''
-Author: Tao
-Date: 2022-10-17 10:29:18
-LastEditors: Tao
-LastEditTime: 2022-10-17 13:56:32
-Description: 
-Email: 202203580@post.au.dk
-Copyright (c) 2022 by Tao Tang, All Rights Reserved. 
-'''
 # Run this app with `python app.py` and
 # visit http://127.0.0.1:8050/ in your web browser.
 
+from gc import callbacks
 import ssl
+from tkinter.ttk import Style
 from turtle import shape
 
 ssl._create_default_https_context = ssl._create_unverified_context
@@ -57,10 +50,7 @@ df.append(df4)
 df5 = pd.read_excel('Mental health Depression disorder Data.xlsx', sheet_name=5)
 df.append(df5)
 
-# * My color scale
-# colorscale = ["#f7fbff", "#ebf3fb", "#deebf7", "#d2e3f3", "#c6dbef", "#b3d2e9", "#9ecae1", "#85bcdb"]
-
-# endpts = list(np.linspace(0, 8, len(colorscale)))
+#? *******************************************Layout Design Part*************************************************
 
 # * Design the layout of the whole data visualization
 app.layout = html.Div([
@@ -84,9 +74,13 @@ app.layout = html.Div([
         )
     ]),
 
-    # * Map
-    dcc.Graph(id="graph"),
+    html.Br(),
 
+    # * Map
+    dcc.Graph(id="graph_map"),
+
+    html.Br(),
+    
     # * Slider
     dcc.Slider(
         df[0]['Year'].min(),
@@ -94,17 +88,23 @@ app.layout = html.Div([
         step=None,
         id='year_slider',
         value=df[0]['Year'].min(),
-        marks={str(year): str(year) for year in df[0]['Year'].unique()},
-    )
+        marks={str(year): str(year) for year in df[0]['Year'].unique()}
+    ),
+
+    html.Br(),
+
+    # * Line chart
+    dcc.Graph(id='graph_line_chart')
 ])
 
+#? *******************************************Interaction Part*************************************************
 
 @app.callback(
-    Output("graph", "figure"),
+    Output("graph_map", "figure"),
     Input("year_slider", "value"),
     Input("region_selection", "value")
 )
-def update_graph(year_value, region_value):
+def update_graph_map(year_value, region_value):
     # * Filter the data from the selected year
     df0Filtered = df[0][df[0]['Year'] == year_value]
     # * Update the colored map
@@ -117,6 +117,31 @@ def update_graph(year_value, region_value):
     fig.update_layout(margin={'l': 0, 'b': 0, 't': 0, 'r': 0}, hovermode='closest')
     return fig
 
+# * Define line_chart_creator
+def line_chart_creator(dff, title):
+    fig = px.scatter(dff, x='Year', y='Depression (%)')
+    fig.update_traces(mode='lines+markers')
+    fig.update_xaxes(showgrid=False)
+    fig.add_annotation(x=0, y=0, xanchor='left', yanchor='bottom',
+                    xref='paper', yref='paper', showarrow=False, align='left',
+                    text=title)
+    fig.update_layout(height=225, margin={'l': 20, 'b': 30, 'r': 10, 't': 10})
+    return fig
+
+# * Callback - Click data and update the line chart
+@app.callback(
+    Output('graph_line_chart', 'figure'),
+    Input('graph_map', 'clickData')
+)
+
+def update_graph_line_chart(clickData):
+    default_country = 'Denmark'
+    default_df = df[0][df[0]['Entity'] == default_country]
+    if clickData == None:
+        return line_chart_creator(default_df, default_country)
+    country_name = clickData['points'][0]['hovertext']
+    dff = df[0][df[0]['Entity'] == country_name]
+    return line_chart_creator(dff, country_name)
 
 if __name__ == '__main__':
     app.run_server(debug=True)
