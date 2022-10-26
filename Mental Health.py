@@ -2,19 +2,10 @@
 Author: Tao
 Date: 2022-10-21 11:00:14
 LastEditors: Tao
-LastEditTime: 2022-10-21 16:28:08
+LastEditTime: 2022-10-26 14:14:26
 Description:
 Email: 202203580@post.au.dk
 Copyright (c) 2022 by Tao Tang, All Rights Reserved.
-'''
-'''
-Author: Tao
-Date: 2022-10-17 10:29:18
-LastEditors: Tao
-LastEditTime: 2022-10-17 13:56:32
-Description: 
-Email: 202203580@post.au.dk
-Copyright (c) 2022 by Tao Tang, All Rights Reserved. 
 '''
 # Run this app with `python app.py` and
 # visit http://127.0.0.1:8050/ in your web browser.
@@ -37,7 +28,19 @@ import json
 with urlopen('https://raw.githubusercontent.com/cihadturhan/tr-geojson/master/geo/tr-cities-utf8.json') as response:
     counties = json.load(response)
 
-app = Dash(__name__)
+# external CSS stylesheets
+external_stylesheets = [
+    'https://codepen.io/chriddyp/pen/bWLwgP.css',
+    {
+        'href': 'https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css',
+        'rel': 'stylesheet',
+        'integrity': 'sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO',
+        'crossorigin': 'anonymous'
+    }
+]
+    
+app = Dash(__name__,
+        external_stylesheets=external_stylesheets)
 
 # * Read data (page 0~5) from excel
 df = []
@@ -75,6 +78,13 @@ app.layout = html.Div([
         )
     ),
 
+    html.Div([
+        html.H5(
+            'Tao Tang, Haoyu Guo',
+            style={'textAlign' : 'right'}
+        )
+    ]),
+
     # * Select a region
     html.Div([
         html.P(
@@ -83,7 +93,8 @@ app.layout = html.Div([
         ),
         dcc.Dropdown(
             ['world', 'europe', 'asia', 'africa', 'north america', 'south america'],
-            id='region_selection'
+            id='region_selection',
+            style={'width' : '30%'}
         )
     ]),
 
@@ -106,24 +117,30 @@ app.layout = html.Div([
     html.Br(),
 
     # * Line chart
-    dcc.Graph(id='graph_line_chart'),
-    dcc.Graph(id='bar_graph')
+    html.Div([
+    dcc.Graph(id='graph_line_chart', style={'width' : '49%', 'height' : '450px', 'float' : 'left'}),
+    dcc.Graph(id='graph_bar', style={'width' : '49%', 'height' : '450px', 'float' : 'right'})
+    ])
 ])
+
 @app.callback(
-    Output("bar_graph", "figure"),
+    Output("graph_bar", "figure"),
     Input("year_slider", "value")
 
 )
+
+# * Define the bar chart of sorted data
 def get_show_bar(year_value):
     select_data = df[0][df[0]['Year'] == year_value]
     select_data.sort_values(by="Depression (%)", inplace=True, ascending=False)
-    data = go.Bar(
-        x = select_data['Entity'],
-        y = select_data['Depression (%)']
+    select_data = select_data[0:10]
+    fig = px.bar(
+        select_data,
+        x = 'Entity',
+        y = 'Depression (%)'
     )
-    return go.Figure(
-        data=[data],
-    )
+    fig.update_layout(paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)")
+    return fig
 
 @app.callback(
     Output("graph_map", "figure"),
@@ -151,7 +168,7 @@ def line_chart_creator(dff, title):
     fig.add_annotation(x=0, y=0, xanchor='left', yanchor='bottom',
                     xref='paper', yref='paper', showarrow=False, align='left',
                     text=title)
-    fig.update_layout(height=225, margin={'l': 20, 'b': 30, 'r': 10, 't': 10})
+    fig.update_layout(paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)")
     return fig
 
 # * Callback - Click data and update the line chart
