@@ -2,10 +2,19 @@
 Author: Tao
 Date: 2022-10-21 11:00:14
 LastEditors: Tao
-LastEditTime: 2022-10-25 16:18:23
+LastEditTime: 2022-10-21 16:28:08
 Description:
 Email: 202203580@post.au.dk
 Copyright (c) 2022 by Tao Tang, All Rights Reserved.
+'''
+'''
+Author: Tao
+Date: 2022-10-17 10:29:18
+LastEditors: Tao
+LastEditTime: 2022-10-17 13:56:32
+Description: 
+Email: 202203580@post.au.dk
+Copyright (c) 2022 by Tao Tang, All Rights Reserved. 
 '''
 # Run this app with `python app.py` and
 # visit http://127.0.0.1:8050/ in your web browser.
@@ -21,6 +30,7 @@ import numpy as np
 import pandas as pd
 import plotly.express as px
 from dash import Dash, Input, Output, dcc, html
+import plotly.graph_objs as go
 from urllib.request import urlopen
 import json
 
@@ -50,7 +60,10 @@ df.append(df4)
 df5 = pd.read_excel('Mental health Depression disorder Data.xlsx', sheet_name=5)
 df.append(df5)
 
-#? *******************************************Layout Design Part*************************************************
+# * My color scale
+# colorscale = ["#f7fbff", "#ebf3fb", "#deebf7", "#d2e3f3", "#c6dbef", "#b3d2e9", "#9ecae1", "#85bcdb"]
+
+# endpts = list(np.linspace(0, 8, len(colorscale)))
 
 # * Design the layout of the whole data visualization
 app.layout = html.Div([
@@ -80,7 +93,7 @@ app.layout = html.Div([
     dcc.Graph(id="graph_map"),
 
     html.Br(),
-    
+
     # * Slider
     dcc.Slider(
         df[0]['Year'].min(),
@@ -88,16 +101,29 @@ app.layout = html.Div([
         step=None,
         id='year_slider',
         value=df[0]['Year'].min(),
-        marks={str(year): str(year) for year in df[0]['Year'].unique()}
+        marks={str(year): str(year) for year in df[0]['Year'].unique()},
     ),
-
     html.Br(),
 
     # * Line chart
-    dcc.Graph(id='graph_line_chart')
+    dcc.Graph(id='graph_line_chart'),
+    dcc.Graph(id='bar_graph')
 ])
+@app.callback(
+    Output("bar_graph", "figure"),
+    Input("year_slider", "value")
 
-#? *******************************************Interaction Part*************************************************
+)
+def get_show_bar(year_value):
+    select_data = df[0][df[0]['Year'] == year_value]
+    select_data.sort_values(by="Depression (%)", inplace=True, ascending=False)
+    data = go.Bar(
+        x = select_data['Entity'],
+        y = select_data['Depression (%)']
+    )
+    return go.Figure(
+        data=[data],
+    )
 
 @app.callback(
     Output("graph_map", "figure"),
