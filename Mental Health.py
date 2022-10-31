@@ -1,12 +1,3 @@
-'''
-Author: Tao
-Date: 2022-10-21 11:00:14
-LastEditors: Tao
-LastEditTime: 2022-10-26 14:14:26
-Description:
-Email: 202203580@post.au.dk
-Copyright (c) 2022 by Tao Tang, All Rights Reserved.
-'''
 # Run this app with `python app.py` and
 # visit http://127.0.0.1:8050/ in your web browser.
 
@@ -38,7 +29,7 @@ external_stylesheets = [
         'crossorigin': 'anonymous'
     }
 ]
-    
+
 app = Dash(__name__,
         external_stylesheets=external_stylesheets)
 
@@ -62,6 +53,9 @@ df.append(df4)
 
 df5 = pd.read_excel('Mental health Depression disorder Data.xlsx', sheet_name=5)
 df.append(df5)
+
+gender_data = pd.read_csv('gender.csv')
+age_data = pd.read_csv('age.csv')
 
 # * My color scale
 # colorscale = ["#f7fbff", "#ebf3fb", "#deebf7", "#d2e3f3", "#c6dbef", "#b3d2e9", "#9ecae1", "#85bcdb"]
@@ -94,7 +88,7 @@ app.layout = html.Div([
         dcc.Dropdown(
             ['world', 'europe', 'asia', 'africa', 'north america', 'south america'],
             id='region_selection',
-            style={'width' : '30%'}
+            style={'width' : '30%','float' : 'left'}
         )
     ]),
 
@@ -115,20 +109,68 @@ app.layout = html.Div([
         marks={str(year): str(year) for year in df[0]['Year'].unique()},
     ),
     html.Br(),
-
     # * Line chart
     html.Div([
     dcc.Graph(id='graph_line_chart', style={'width' : '49%', 'height' : '450px', 'float' : 'left'}),
-    dcc.Graph(id='graph_bar', style={'width' : '49%', 'height' : '450px', 'float' : 'right'})
+    dcc.Graph(id='graph_bar', style={'width' : '49%', 'height' : '450px', 'float' : 'right'}),
+    dcc.Graph(id='graph_parallel', style={'width' : '49%', 'height' : '450px', 'float' : 'left'}),
+    dcc.Graph(id='graph_scatter', style={'width' : '49%', 'height' : '450px', 'float' : 'right'})
     ])
 ])
-
 @app.callback(
-    Output("graph_bar", "figure"),
+    Output("graph_parallel", "figure"),
     Input("year_slider", "value")
 
 )
+def get_show_parallel_c(year_value):
+    data = age_data[age_data['Year'] == year_value]
+    fig = px.parallel_coordinates(data,
+      dimensions=['10-14 years old (%)',  '15-49 years old (%)',
+                  '50-69 years old (%)','70+ years old (%)','Age-standardized (%)'],
+    )
+    return fig
+@app.callback(
+    Output("graph_scatter", "figure"),
+    Input("year_slider", "value")
+)
 
+def get_show_scatter(year_value):
+    data = gender_data[gender_data['Year'] == year_value]
+    # print(data)
+    fig = px.scatter(
+        data,
+        x="Prevalence in males (%)",
+        y="Prevalence in females (%)",
+        text= "Entity"
+        # color="species",
+        # size='petal_length',
+        # hover_data=['petal_width']
+    )
+    fig.add_shape(type="line",
+      x0=0, y0=0, x1=10, y1=10,
+      line=dict(
+          color="MediumPurple",
+          width=4,
+          dash="dot",
+      )
+    )
+    fig.update_shapes(dict(xref='x', yref='y'))
+    fig.update_layout(
+        xaxis=dict(
+            dtick = 1,
+            range=(0, 10),
+        ),
+        yaxis=dict(
+            dtick=1,
+            range=(0, 10),
+        ),
+    )
+    fig.update_layout(newshape_drawdirection= "diagonal")
+    return fig
+@app.callback(
+    Output("graph_bar", "figure"),
+    Input("year_slider", "value")
+)
 # * Define the bar chart of sorted data
 def get_show_bar(year_value):
     select_data = df[0][df[0]['Year'] == year_value]
@@ -184,6 +226,7 @@ def update_graph_line_chart(clickData):
         return line_chart_creator(default_df, default_country)
     country_name = clickData['points'][0]['hovertext']
     dff = df[0][df[0]['Entity'] == country_name]
+    # all_age = age_data[age_data['Entity'] == country_name]
     return line_chart_creator(dff, country_name)
 
 if __name__ == '__main__':
