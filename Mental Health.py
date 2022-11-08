@@ -88,7 +88,7 @@ app.layout = html.Div([
         dcc.Dropdown(
             ['world', 'europe', 'asia', 'africa', 'north america', 'south america'],
             id='region_selection',
-            style={'width' : '30%','float' : 'left'}
+            style={'width' : '30%', 'height' : '450px', 'float' : 'left'}
         )
     ]),
 
@@ -112,7 +112,9 @@ app.layout = html.Div([
     # * Line chart
     html.Div([
     dcc.Graph(id='graph_line_chart', style={'width' : '49%', 'height' : '450px', 'float' : 'left'}),
-    dcc.Graph(id='graph_bar', style={'width' : '49%', 'height' : '450px', 'float' : 'right'}),
+    dcc.Graph(id='graph_4age_line_chart', style={'width' : '49%', 'height' : '450px', 'float' : 'right'}),
+    dcc.Graph(id='graph_gender_line', style={'width' : '49%', 'height' : '450px', 'float' : 'left'}),
+    dcc.Graph(id='graph_bar', style={'width' : '49%', 'height' : '450px', 'float' : 'left'}),
     dcc.Graph(id='graph_parallel', style={'width' : '49%', 'height' : '450px', 'float' : 'left'}),
     dcc.Graph(id='graph_scatter', style={'width' : '49%', 'height' : '450px', 'float' : 'right'})
     ])
@@ -202,32 +204,129 @@ def update_graph_map(year_value, region_value):
     fig.update_layout(margin={'l': 0, 'b': 0, 't': 0, 'r': 0}, hovermode='closest')
     return fig
 
-# * Define line_chart_creator
-def line_chart_creator(dff, title):
-    fig = px.scatter(dff, x='Year', y='Depression (%)')
-    fig.update_traces(mode='lines+markers')
-    fig.update_xaxes(showgrid=False)
-    fig.add_annotation(x=0, y=0, xanchor='left', yanchor='bottom',
-                    xref='paper', yref='paper', showarrow=False, align='left',
-                    text=title)
-    fig.update_layout(paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)")
-    return fig
-
 # * Callback - Click data and update the line chart
 @app.callback(
     Output('graph_line_chart', 'figure'),
     Input('graph_map', 'clickData')
 )
-
 def update_graph_line_chart(clickData):
     default_country = 'Denmark'
     default_df = df[0][df[0]['Entity'] == default_country]
+    default_all_age = age_data[age_data['Entity'] == default_country]
+    # print(default_all_age)
     if clickData == None:
-        return line_chart_creator(default_df, default_country)
+        return line_chart_creator(default_df,default_all_age, default_country)
     country_name = clickData['points'][0]['hovertext']
     dff = df[0][df[0]['Entity'] == country_name]
-    # all_age = age_data[age_data['Entity'] == country_name]
-    return line_chart_creator(dff, country_name)
+    all_age = age_data[age_data['Entity'] == country_name]
+    print(all_age)
+    return line_chart_creator(dff,all_age, country_name)
+# * Define line_chart_creator
+def line_chart_creator(dff, all_age, country_title):
+    fig = go.Figure()
+    # print(list(dff['Year']))
+    # print(list(dff['Depression (%)']))
+    fig.add_trace(go.Scatter(x=dff['Year'], y=dff['Depression (%)'],
+                             mode = 'lines+markers',
+                             name = 'Age Standardized (%)'
+                             ))
+    fig.add_trace(go.Scatter(x=all_age['Year'], y=all_age['All ages (%)'],
+                             mode = 'lines+markers',
+                             name = 'All ages (%)'
+                             ))
+    # fig = px.scatter(dff, x='Year', y='Depression (%)')
+    # fig.update_traces(mode='lines+markers')
+    # fig.update_xaxes(showgrid=False)
+    fig.add_annotation(x=0, y=0, xanchor='left', yanchor='bottom',
+                    xref='paper', yref='paper', showarrow=False, align='left',
+                    text=country_title)
+    # fig.update_layout(paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)")
+    return fig
+
+@app.callback(
+    Output('graph_4age_line_chart', 'figure'),
+    Input('graph_map', 'clickData')
+)
+def update_graph_4age(clickData):
+    default_country = 'Denmark'
+    default_age_data = age_data[age_data['Entity'] == default_country]
+    print(default_age_data)
+    if clickData == None:
+        return age_chart_creator(default_age_data, default_country)
+    country_name = clickData['points'][0]['hovertext']
+    dff = age_data[age_data['Entity'] == country_name]
+    print(dff)
+    return age_chart_creator(dff, country_name)
+
+def age_chart_creator(age_data, country_title):
+    fig = go.Figure()
+    # print(list(dff['Year']))
+    # print(list(dff['Depression (%)']))
+    fig.add_trace(go.Scatter(x=age_data['Year'], y=age_data['10-14 years old (%)'],
+                             mode='lines+markers',
+                             name='10-14 years old (%)'
+                             ))
+    fig.add_trace(go.Scatter(x=age_data['Year'], y=age_data['15-49 years old (%)'],
+                             mode='lines+markers',
+                             name='15-49 years old (%)'
+                             ))
+    fig.add_trace(go.Scatter(x=age_data['Year'], y=age_data['50-69 years old (%)'],
+                             mode='lines+markers',
+                             name='50-69 years old (%)'
+                             ))
+    fig.add_trace(go.Scatter(x=age_data['Year'], y=age_data['70+ years old (%)'],
+                             mode='lines+markers',
+                             name='70+ years old (%)'
+                             ))
+    fig.add_annotation(x=0, y=0, xanchor='left', yanchor='bottom',
+                       xref='paper', yref='paper', showarrow=False, align='left',
+                       text=country_title)
+    fig.add_annotation(x=0, y=0, xanchor='left', yanchor='bottom',
+                    xref='paper', yref='paper', showarrow=False, align='left',
+                    text=country_title)
+    # fig.update_layout(paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)")
+    return fig
+
+@app.callback(
+    Output('graph_gender_line', 'figure'),
+    Input('graph_map', 'clickData')
+)
+def update_graph_gender_line(clickData):
+    default_country = 'Denmark'
+    default_gender_data = gender_data[gender_data['Entity'] == default_country]
+    default_all_age = age_data[age_data['Entity'] == default_country]
+    # print(default_age_data)
+    if clickData == None:
+        return gender_line_creator(default_all_age, default_gender_data, default_country)
+    country_name = clickData['points'][0]['hovertext']
+    default_gender_data = gender_data[gender_data['Entity'] == country_name]
+    default_all_age = age_data[age_data['Entity'] == country_name]
+    return gender_line_creator(default_all_age, default_gender_data, country_name)
+
+def gender_line_creator(all_age_data, gender_data, country_title):
+    fig = go.Figure()
+    # print(list(dff['Year']))
+    # print(list(dff['Depression (%)']))
+    fig.add_trace(go.Scatter(x=gender_data['Year'], y=gender_data['Prevalence in males (%)'],
+                             mode='lines+markers',
+                             name='Prevalence in males (%)'
+                             ))
+    fig.add_trace(go.Scatter(x=all_age_data['Year'], y=all_age_data['15-49 years old (%)'],
+                             mode='lines+markers',
+                             name='Both sexes'
+                             ))
+    fig.add_trace(go.Scatter(x=gender_data['Year'], y=gender_data['Prevalence in females (%)'],
+                             mode='lines+markers',
+                             name='Prevalence in females (%)'
+                             ))
+    fig.add_annotation(x=0, y=0, xanchor='left', yanchor='bottom',
+                       xref='paper', yref='paper', showarrow=False, align='left',
+                       text=country_title)
+    fig.add_annotation(x=0, y=0, xanchor='left', yanchor='bottom',
+                    xref='paper', yref='paper', showarrow=False, align='left',
+                    text=country_title)
+    # fig.update_layout(paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)")
+    return fig
 
 if __name__ == '__main__':
     app.run_server(debug=True)
