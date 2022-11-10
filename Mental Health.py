@@ -42,20 +42,10 @@ df.append(df0)
 df1 = pd.read_excel('Mental health Depression disorder Data.xlsx', sheet_name=1)
 df.append(df1)
 
-df2 = pd.read_excel('Mental health Depression disorder Data.xlsx', sheet_name=2)
-df.append(df2)
-
-df3 = pd.read_excel('Mental health Depression disorder Data.xlsx', sheet_name=3)
-df.append(df3)
-
-df4 = pd.read_excel('Mental health Depression disorder Data.xlsx', sheet_name=4)
-df.append(df4)
-
-df5 = pd.read_excel('Mental health Depression disorder Data.xlsx', sheet_name=5)
-df.append(df5)
 
 gender_data = pd.read_csv('gender.csv')
 age_data = pd.read_csv('age.csv')
+suicide_data = pd.read_csv('suicide.csv')
 
 # * My color scale
 # colorscale = ["#f7fbff", "#ebf3fb", "#deebf7", "#d2e3f3", "#c6dbef", "#b3d2e9", "#9ecae1", "#85bcdb"]
@@ -114,10 +104,19 @@ app.layout = html.Div([
     dcc.Graph(id='graph_line_chart', style={'width' : '49%', 'height' : '450px', 'float' : 'left'}),
     dcc.Graph(id='graph_4age_line_chart', style={'width' : '49%', 'height' : '450px', 'float' : 'right'}),
     dcc.Graph(id='graph_gender_line', style={'width' : '49%', 'height' : '450px', 'float' : 'left'}),
+    dcc.Graph(id='graph_suicide_line', style={'width' : '49%', 'height' : '450px', 'float' : 'right'}),
+
     dcc.Graph(id='graph_bar', style={'width' : '49%', 'height' : '450px', 'float' : 'left'}),
     dcc.Graph(id='graph_parallel', style={'width' : '49%', 'height' : '450px', 'float' : 'left'}),
     dcc.Graph(id='graph_scatter', style={'width' : '49%', 'height' : '450px', 'float' : 'right'})
-    ])
+    ]),
+    dcc.RangeSlider(
+        id='year-range-slider',
+        min=1990, max=2017, step=1,
+        marks={0: '0', 2.5: '2.5'},
+        value=[1990, 2017]
+    ),
+    dcc.Graph(id='graph_suicide_depression_scatter')
 ])
 @app.callback(
     Output("graph_parallel", "figure"),
@@ -219,7 +218,7 @@ def update_graph_line_chart(clickData):
     country_name = clickData['points'][0]['hovertext']
     dff = df[0][df[0]['Entity'] == country_name]
     all_age = age_data[age_data['Entity'] == country_name]
-    print(all_age)
+    # print(all_age)
     return line_chart_creator(dff,all_age, country_name)
 # * Define line_chart_creator
 def line_chart_creator(dff, all_age, country_title):
@@ -250,12 +249,12 @@ def line_chart_creator(dff, all_age, country_title):
 def update_graph_4age(clickData):
     default_country = 'Denmark'
     default_age_data = age_data[age_data['Entity'] == default_country]
-    print(default_age_data)
+    # print(default_age_data)
     if clickData == None:
         return age_chart_creator(default_age_data, default_country)
     country_name = clickData['points'][0]['hovertext']
     dff = age_data[age_data['Entity'] == country_name]
-    print(dff)
+    # print(dff)
     return age_chart_creator(dff, country_name)
 
 def age_chart_creator(age_data, country_title):
@@ -322,10 +321,70 @@ def gender_line_creator(all_age_data, gender_data, country_title):
     fig.add_annotation(x=0, y=0, xanchor='left', yanchor='bottom',
                        xref='paper', yref='paper', showarrow=False, align='left',
                        text=country_title)
-    fig.add_annotation(x=0, y=0, xanchor='left', yanchor='bottom',
-                    xref='paper', yref='paper', showarrow=False, align='left',
-                    text=country_title)
     # fig.update_layout(paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)")
+    return fig
+
+@app.callback(
+    Output('graph_suicide_line', 'figure'),
+    Input('graph_map', 'clickData')
+)
+def update_graph_suicide_line(clickData):
+    default_country = 'Denmark'
+    default_suicide_data = suicide_data[suicide_data['Entity'] == default_country]
+    default_all_age = age_data[age_data['Entity'] == default_country]
+    # print(default_age_data)
+    if clickData == None:
+        return suicide_line_creator(default_all_age, default_suicide_data, default_country)
+    country_name = clickData['points'][0]['hovertext']
+    default_suicide_data = suicide_data[suicide_data['Entity'] == country_name]
+    default_all_age = age_data[age_data['Entity'] == country_name]
+    return suicide_line_creator(default_all_age, default_suicide_data, country_name)
+
+def suicide_line_creator(all_age_data, suicide_data, country_title):
+    fig = go.Figure()
+    # print(list(dff['Year']))
+    # print(list(dff['Depression (%)']))
+    fig.add_trace(go.Scatter(x=suicide_data['Year'], y=suicide_data['Suicide rate (deaths per 100,000 individuals)'],
+                             mode='lines+markers',
+                             name='Suicide rate (deaths per 100,000 individuals)'
+                             ))
+    fig.add_trace(go.Scatter(x=all_age_data['Year'], y=all_age_data['Age-standardized (%)'],
+                             mode='lines+markers',
+                             name='Depressive disorder rates (number suffering per 100,000)'
+                             ))
+    fig.add_annotation(x=0, y=0, xanchor='left', yanchor='bottom',
+                       xref='paper', yref='paper', showarrow=False, align='left',
+                       text=country_title)
+    # fig.update_layout(paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)")
+    return fig
+
+@app.callback(
+    Output("graph_suicide_depression_scatter", "figure"),
+    Input("year-range-slider", "value"))
+def get_show_suicide_x_depress(slider_range):
+    # df = px.data.iris() # replace with your own data source
+    old_year, last_year = slider_range
+    print(old_year)
+    print(last_year)
+    old_suicide = suicide_data[suicide_data['Year'] == old_year]
+    last_suicide = suicide_data[suicide_data['Year'] == last_year]
+    old_depression = age_data[age_data['Year'] == old_year]
+    last_depression = age_data[age_data['Year'] == last_year]
+    suicide_change = pd.DataFrame
+    for old in old_suicide:
+        for new in last_depression:
+            if old['Entity'] == new['Entity'] and old['Year'] == new['Year']:
+                change = new['Depressive disorder rates (number suffering per 100,000)'] - old['Depressive disorder rates (number suffering per 100,000)']
+                suicide_change = suicide_change.append({"Entity": old['Entity'],"Year" : old['Year'],"change" : change})
+     # = last_suicide['Depressive disorder rates (number suffering per 100,000)'] - old_suicide['Depressive disorder rates (number suffering per 100,000)']
+    depression_change = last_depression['Age-standardized (%)'] - old_depression['Age-standardized (%)']
+    print(suicide_change)
+    print(depression_change)
+    # mask = (df['petal_width'] > low) & (df['petal_width'] < high)
+    fig = px.scatter( x=depression_change, y=suicide_change,
+        # color="species", size='petal_length',
+        # hover_data=['petal_width']
+        )
     return fig
 
 if __name__ == '__main__':
