@@ -86,11 +86,21 @@ app.layout = html.Div([
 
     # * Map and Bar
     html.Div([
-        dcc.Graph(id="graph_map", style={'width' : '69%', 'height' : '450px', 'float' : 'left', 'padding' : '50px'}),
-        dcc.Graph(id='graph_bar', style={'width' : '29%', 'height' : '450px', 'float' : 'right'}),
+        html.H3(
+        'Share of the population with depression',
+        id='title_map_new',
+        style={'margin-left' : '220px', 'float' : 'left'}
+        ),
+        html.H3(
+        'Top 15',
+        id='title_bar',
+        style={'margin-right' : '290px','float' : 'right'}
+        ),
+        dcc.Graph(id="graph_map", style={'width' : '59%', 'height' : '450px', 'float' : 'left', 'margin-left' : '50px'}),
+        dcc.Graph(id='graph_bar', style={'width' : '30%', 'height' : '450px', 'float' : 'left', 'margin-left' : '30px'}),
     ],style={'overflow' : 'hidden'}),
 
-    html.Br(),
+   #html.Br(),
 
     # * Slider
     html.Div([
@@ -244,7 +254,18 @@ def update_graph_map(year_value, region_value):
                                     'Code': False})
     fig.update_layout(margin={'l': 0, 'b': 0, 't': 0, 'r': 0}, hovermode='closest')
     fig.update_layout(legend_traceorder="reversed")
+    #fig.update_layout(legend_x=1.03, legend_y=1.11)
+    #title = 'Share of the population with depression, ' + str(year_value)
     return fig
+
+@app.callback(
+    Output("title_map_new", "children"),
+    Input("year_slider", "value"),
+)
+
+def update_title_map(year_value):
+    title = 'Share of the population with depression, ' + str(year_value)
+    return title
 
 # * Callback - Click data and update the line chart
 @app.callback(
