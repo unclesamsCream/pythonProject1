@@ -69,36 +69,42 @@ app.layout = html.Div([
         )
     ]),
 
-    # * Select a region
     html.Div([
-        html.P(
-            'Select a Region',
-            # style={'textAlign' : 'center'}
-        ),
-        dcc.Dropdown(
-            ['world', 'europe', 'asia', 'africa', 'north america', 'south america'],
-            id='region_selection',
-            style={'width' : '30%', 'height' : '450px', 'float' : 'left'}
-        )
+    html.P(
+        'Select a Region',
+        # style={'textAlign' : 'center'}
+    ),
+    dcc.Dropdown(
+        ['world', 'europe', 'asia', 'africa', 'north america', 'south america'],
+        id='region_selection',
+        #style={'width' : '30%', 'height' : '500px', 'float' : 'left'}
+        style={'width' : '30%'}
+    )
     ]),
 
     html.Br(),
 
-    # * Map
-    dcc.Graph(id="graph_map"),
+    # * Map and Bar
+    html.Div([
+        dcc.Graph(id="graph_map", style={'width' : '69%', 'height' : '450px', 'float' : 'left', 'padding' : '50px'}),
+        dcc.Graph(id='graph_bar', style={'width' : '29%', 'height' : '450px', 'float' : 'right'}),
+    ],style={'overflow' : 'hidden'}),
 
     html.Br(),
 
     # * Slider
-    dcc.Slider(
+    html.Div([
+        dcc.Slider(
         df[0]['Year'].min(),
         df[0]['Year'].max(),
         step=None,
         id='year_slider',
         value=df[0]['Year'].min(),
         marks={str(year): str(year) for year in df[0]['Year'].unique()},
-    ),
+    )
+    ],style={'overflow' : 'hidden'}),
     html.Br(),
+
     # * Line chart
     html.Div([
     dcc.Graph(id='graph_line_chart', style={'width' : '49%', 'height' : '450px', 'float' : 'left'}),
@@ -106,22 +112,39 @@ app.layout = html.Div([
     dcc.Graph(id='graph_gender_line', style={'width' : '49%', 'height' : '450px', 'float' : 'left'}),
     dcc.Graph(id='graph_suicide_line', style={'width' : '49%', 'height' : '450px', 'float' : 'right'}),
 
-    dcc.Graph(id='graph_bar', style={'width' : '49%', 'height' : '450px', 'float' : 'left'}),
     dcc.Graph(id='graph_parallel', style={'width' : '49%', 'height' : '450px', 'float' : 'left'}),
     dcc.Graph(id='graph_scatter', style={'width' : '49%', 'height' : '450px', 'float' : 'right'})
     ]),
-    dcc.RangeSlider(
-        id='year-range-slider',
-        min=1990, max=2017, step=1,
-        marks={0: '0', 2.5: '2.5'},
-        value=[1990, 2017]
-    ),
-    dcc.Graph(id='graph_suicide_depression_scatter')
+    # dcc.RangeSlider(
+    #     id='year-range-slider',
+    #     min=1990, max=2017, step=1,
+    #     marks={0: '0', 2.5: '2.5'},
+    #     value=[1990, 2017]
+    # ),
+    # dcc.Graph(id='graph_suicide_depression_scatter')
 ])
+
+def group_depression(x):
+    if x < 1:
+        return '< 1%'
+    elif x < 2:
+        return '1% ~ 2%'
+    elif x < 3:
+        return '2% ~ 3%'
+    elif x < 4:
+        return '3% ~ 4%'
+    elif x < 5:
+        return '4% ~ 5%'
+    elif x < 6:
+        return '5% ~ 6%'
+    elif x < 7:
+        return '6% ~ 7%'
+    elif x < 8:
+        return '7% ~ 8%'
+
 @app.callback(
     Output("graph_parallel", "figure"),
     Input("year_slider", "value")
-
 )
 def get_show_parallel_c(year_value):
     data = age_data[age_data['Year'] == year_value]
@@ -142,7 +165,7 @@ def get_show_scatter(year_value):
         data,
         x="Prevalence in males (%)",
         y="Prevalence in females (%)",
-        text= "Entity"
+        #text= "Entity"
         # color="species",
         # size='petal_length',
         # hover_data=['petal_width']
@@ -176,13 +199,19 @@ def get_show_scatter(year_value):
 def get_show_bar(year_value):
     select_data = df[0][df[0]['Year'] == year_value]
     select_data.sort_values(by="Depression (%)", inplace=True, ascending=False)
-    select_data = select_data[0:10]
+    select_data = select_data[0:15]
+    select_data = select_data[::-1]
     fig = px.bar(
         select_data,
-        x = 'Entity',
-        y = 'Depression (%)'
+        y = 'Entity',
+        x = 'Depression (%)',
+        orientation='h',
+        #color= 'Depression (%)',
+        text_auto='.2f'
     )
     fig.update_layout(paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)")
+    fig.update_traces(textposition="outside")
+    fig.update_traces(marker_color='#205EA8')
     return fig
 
 @app.callback(
@@ -190,17 +219,31 @@ def get_show_bar(year_value):
     Input("year_slider", "value"),
     Input("region_selection", "value")
 )
+
 def update_graph_map(year_value, region_value):
+    #print(df[0]['Depression (%)'][0])
+    #df[0].sort_values(by='Depression (%)', ascending=False)
+    df[0]['Depression Rate(grouped)'] = df[0]['Depression (%)'].apply(group_depression)
+    colors = px.colors.qualitative.Set2
     # * Filter the data from the selected year
     df0Filtered = df[0][df[0]['Year'] == year_value]
     # * Update the colored map
-    fig = px.choropleth(df0Filtered, locations='Code', color='Depression (%)',
-                        color_continuous_scale='Viridis',
+    fig = px.choropleth(df0Filtered, locations='Code', color='Depression Rate(grouped)',
+                        #color_continuous_scale='Viridis',
                         scope=region_value,
-                        range_color=(0, 10),
+                        #color_discrete_sequence=px.colors.sequential.Greens,
+                        color_discrete_sequence= ['#FFFFD8', '#ECF8B1', '#C9E9B4', '#7FCDBC', '#41B8C3', '#1D90C1', '#205EA8', '#0C2C85'],
+                        #color_discrete_sequence=colors,
+                        category_orders={'Depression Rate(grouped)':['< 1%', '1% ~ 2%', '2% ~ 3%','3% ~ 4%', '4% ~ 5%', '5% ~ 6%', '6% ~ 7%', '7% ~ 8%']},
+                        #range_color=(0, 10),
                         hover_name='Entity',
-                        labels={'Depression (%)': 'Depression rate'})
+                        #labels={'Depression (%)': 'Depression rate'},
+                        hover_data={'Year': True,
+                                    'Depression (%)': ':.3f',
+                                    'Depression Rate(grouped)': False,
+                                    'Code': False})
     fig.update_layout(margin={'l': 0, 'b': 0, 't': 0, 'r': 0}, hovermode='closest')
+    fig.update_layout(legend_traceorder="reversed")
     return fig
 
 # * Callback - Click data and update the line chart
