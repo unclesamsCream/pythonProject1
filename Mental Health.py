@@ -69,6 +69,7 @@ app.layout = html.Div([
         )
     ]),
 
+    # * Select a region
     html.Div([
     html.P(
         'Select a Region',
@@ -97,7 +98,12 @@ app.layout = html.Div([
         style={'margin-right' : '290px','float' : 'right'}
         ),
         dcc.Graph(id="graph_map", style={'width' : '59%', 'height' : '450px', 'float' : 'left', 'margin-left' : '50px'}),
-        dcc.Graph(id='graph_bar', style={'width' : '30%', 'height' : '450px', 'float' : 'left', 'margin-left' : '30px'}),
+        dcc.RadioItems(
+                id='mode_switch',
+                options=['Top','Bottom'],
+                value='Top'
+        ),
+        dcc.Graph(id='graph_bar', style={'width' : '30%', 'height' : '450px', 'float' : 'left', 'margin-left' : '30px', 'padding' : '50px'}),
     ],style={'overflow' : 'hidden'}),
 
    #html.Br(),
@@ -117,13 +123,56 @@ app.layout = html.Div([
 
     # * Line chart
     html.Div([
-    dcc.Graph(id='graph_line_chart', style={'width' : '49%', 'height' : '450px', 'float' : 'left'}),
-    dcc.Graph(id='graph_4age_line_chart', style={'width' : '49%', 'height' : '450px', 'float' : 'right'}),
-    dcc.Graph(id='graph_gender_line', style={'width' : '49%', 'height' : '450px', 'float' : 'left'}),
-    dcc.Graph(id='graph_suicide_line', style={'width' : '49%', 'height' : '450px', 'float' : 'right'}),
+    dcc.Tabs(
+        [
+            dcc.Tab(
+                [
+                    html.Br(),
+                    html.P('graph_line_chart'),
+                    dcc.Graph(id='graph_line_chart')
+                ],
+                label='graph_line_chart'
+            ),
+            dcc.Tab(
+                [
+                    html.Br(),
+                    html.P('graph_4age_line_chart'),
+                    dcc.Graph(id='graph_4age_line_chart'),
+                ],
+                label='graph_4age_line_chart'
+            ),
+            dcc.Tab(
+                [
+                    html.Br(),
+                    html.P('graph_gender_line'),
+                    dcc.Graph(id='graph_gender_line'),
+                ],
+                label='graph_gender_line'
+            ),
+            dcc.Tab(
+                [
+                    html.Br(),
+                    html.P('graph_suicide_line'),
+                    dcc.Graph(id='graph_suicide_line'),
+                ],
+                label='graph_suicide_line'
+            ),
+        ]
+    ),
+        # style={'margin-top': '100px'}
 
     dcc.Graph(id='graph_parallel', style={'width' : '49%', 'height' : '450px', 'float' : 'left'}),
     dcc.Graph(id='graph_scatter', style={'width' : '49%', 'height' : '450px', 'float' : 'right'})
+    ],style={'overflow' : 'hidden'}),
+    html.Br(),
+    html.Div([
+    dcc.RangeSlider(
+        id='year-range-slider',
+        min=1990, max=2017, step=1,
+        marks={str(year): str(year) for year in df[0]['Year'].unique()},
+        value=[1990, 2017]
+    ),
+    dcc.Graph(id='graph_suicide_depression_scatter',style={'overflow' : 'hidden'})
     ]),
     # dcc.RangeSlider(
     #     id='year-range-slider',
@@ -155,6 +204,7 @@ def group_depression(x):
 @app.callback(
     Output("graph_parallel", "figure"),
     Input("year_slider", "value")
+
 )
 def get_show_parallel_c(year_value):
     data = age_data[age_data['Year'] == year_value]
@@ -175,6 +225,7 @@ def get_show_scatter(year_value):
         data,
         x="Prevalence in males (%)",
         y="Prevalence in females (%)",
+        hover_name= "Entity"
         #text= "Entity"
         # color="species",
         # size='petal_length',
@@ -203,14 +254,23 @@ def get_show_scatter(year_value):
     return fig
 @app.callback(
     Output("graph_bar", "figure"),
-    Input("year_slider", "value")
+    [Input("year_slider", "value"),
+    Input("mode_switch", "value")]
 )
 # * Define the bar chart of sorted data
-def get_show_bar(year_value):
+def get_show_bar(year_value, display_mode):
     select_data = df[0][df[0]['Year'] == year_value]
     select_data.sort_values(by="Depression (%)", inplace=True, ascending=False)
-    select_data = select_data[0:15]
-    select_data = select_data[::-1]
+    if(display_mode == 'Top'):
+        select_data = select_data[0:15]
+        select_data = select_data[::-1]
+    else:
+        select_data = select_data[::-1]
+        select_data = select_data[:15]
+        select_data = select_data[::-1]
+    #     select_data = select_data[0:15]
+    #     select_data = select_data[::-1]
+
     fig = px.bar(
         select_data,
         y = 'Entity',
@@ -303,6 +363,7 @@ def line_chart_creator(dff, all_age, country_title):
     fig.add_annotation(x=0, y=0, xanchor='left', yanchor='bottom',
                     xref='paper', yref='paper', showarrow=False, align='left',
                     text=country_title)
+    fig.update_layout(hovermode='x unified')
     # fig.update_layout(paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)")
     return fig
 
@@ -347,6 +408,7 @@ def age_chart_creator(age_data, country_title):
     fig.add_annotation(x=0, y=0, xanchor='left', yanchor='bottom',
                     xref='paper', yref='paper', showarrow=False, align='left',
                     text=country_title)
+    fig.update_layout(hovermode='x unified')
     # fig.update_layout(paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)")
     return fig
 
@@ -385,6 +447,7 @@ def gender_line_creator(all_age_data, gender_data, country_title):
     fig.add_annotation(x=0, y=0, xanchor='left', yanchor='bottom',
                        xref='paper', yref='paper', showarrow=False, align='left',
                        text=country_title)
+    fig.update_layout(hovermode='x unified')
     # fig.update_layout(paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)")
     return fig
 
@@ -419,6 +482,7 @@ def suicide_line_creator(all_age_data, suicide_data, country_title):
     fig.add_annotation(x=0, y=0, xanchor='left', yanchor='bottom',
                        xref='paper', yref='paper', showarrow=False, align='left',
                        text=country_title)
+    fig.update_layout(hovermode='x unified')
     # fig.update_layout(paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)")
     return fig
 
@@ -428,27 +492,35 @@ def suicide_line_creator(all_age_data, suicide_data, country_title):
 def get_show_suicide_x_depress(slider_range):
     # df = px.data.iris() # replace with your own data source
     old_year, last_year = slider_range
-    print(old_year)
-    print(last_year)
+    # print(old_year)
+    # print(last_year)
     old_suicide = suicide_data[suicide_data['Year'] == old_year]
     last_suicide = suicide_data[suicide_data['Year'] == last_year]
     old_depression = age_data[age_data['Year'] == old_year]
     last_depression = age_data[age_data['Year'] == last_year]
-    suicide_change = pd.DataFrame
-    for old in old_suicide:
-        for new in last_depression:
-            if old['Entity'] == new['Entity'] and old['Year'] == new['Year']:
-                change = new['Depressive disorder rates (number suffering per 100,000)'] - old['Depressive disorder rates (number suffering per 100,000)']
-                suicide_change = suicide_change.append({"Entity": old['Entity'],"Year" : old['Year'],"change" : change})
-     # = last_suicide['Depressive disorder rates (number suffering per 100,000)'] - old_suicide['Depressive disorder rates (number suffering per 100,000)']
-    depression_change = last_depression['Age-standardized (%)'] - old_depression['Age-standardized (%)']
-    print(suicide_change)
-    print(depression_change)
-    # mask = (df['petal_width'] > low) & (df['petal_width'] < high)
-    fig = px.scatter( x=depression_change, y=suicide_change,
-        # color="species", size='petal_length',
-        # hover_data=['petal_width']
-        )
+    suicide_change = pd.DataFrame()
+    for old_row in old_suicide.iterrows():
+        # print(old_row['Entity'])
+        for new_row in last_suicide.iterrows():
+            # print(new_row['Entity'])
+            # print(type(new_row['Entity']))
+            # print(type(old_row['Entity']))
+            if old_row[1]['Entity'] == new_row[1]['Entity']:
+                change = new_row[1]['Suicide rate (deaths per 100,000 individuals)'] - old_row[1]['Suicide rate (deaths per 100,000 individuals)']
+                suicide_change = suicide_change.append({"Entity": old_row[1]['Entity'], "suicide_change_rate": change},ignore_index=True)
+    # print("----------",suicide_change)
+    depression_change = pd.DataFrame()
+    for old_row in old_depression.iterrows():
+        for new_row in last_depression.iterrows():
+            if old_row[1]['Entity'] == new_row[1]['Entity']:
+                change = (new_row[1]['Age-standardized (%)'] - old_row[1]['Age-standardized (%)'])*1000
+                depression_change = depression_change.append({"Entity": old_row[1]['Entity'],"depression_change_rate" : change},ignore_index=True)
+    # print(depression_change)
+    df = pd.merge(suicide_change, depression_change, on=['Entity'])
+
+    fig = px.scatter(df, x='suicide_change_rate', y='depression_change_rate',hover_name='Entity')
+    fig.update_yaxes(range=[-850,850], zeroline= True,zerolinewidth=2, zerolinecolor='black')
+    fig.update_xaxes(range=[-50,50], zeroline= True,zerolinewidth=2, zerolinecolor='black')
     return fig
 
 if __name__ == '__main__':
