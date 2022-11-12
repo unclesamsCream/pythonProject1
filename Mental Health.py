@@ -101,9 +101,10 @@ app.layout = html.Div([
         dcc.RadioItems(
                 id='mode_switch',
                 options=['Top','Bottom'],
-                value='Top'
+                value='Top',
+                style={'margin-right' : '100px','float' : 'right'}
         ),
-        dcc.Graph(id='graph_bar', style={'width' : '30%', 'height' : '450px', 'float' : 'left', 'margin-left' : '30px', 'padding' : '50px'}),
+        dcc.Graph(id='graph_bar', style={'width' : '30%', 'height' : '450px', 'float' : 'left', 'margin-left' : '30px'}),
     ],style={'overflow' : 'hidden'}),
 
    #html.Br(),
