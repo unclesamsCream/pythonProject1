@@ -90,21 +90,21 @@ app.layout = html.Div([
         html.H3(
         'Share of the population with depression',
         id='title_map_new',
-        style={'margin-left' : '220px', 'float' : 'left'}
+        style={'margin-left' : '300px', 'float' : 'left'}
         ),
         html.H3(
         'Top 15',
         id='title_bar',
-        style={'margin-right' : '290px','float' : 'right'}
+        style={'margin-right' : '100px','float' : 'right'}
         ),
-        dcc.Graph(id="graph_map", style={'width' : '59%', 'height' : '450px', 'float' : 'left', 'margin-left' : '50px'}),
+        dcc.Graph(id="graph_map", style={'width' : '69%', 'height' : '450px', 'float' : 'left', 'margin-left' : '50px'}),
         dcc.RadioItems(
                 id='mode_switch',
-                options=['Top','Bottom'],
+                options=['Top','Last'],
                 value='Top',
-                style={'margin-right' : '100px','float' : 'right'}
+                style={'margin-right' : '50px','float' : 'right'}
         ),
-        dcc.Graph(id='graph_bar', style={'width' : '30%', 'height' : '450px', 'float' : 'left', 'margin-left' : '30px'}),
+        dcc.Graph(id='graph_bar', style={'width' : '25%', 'height' : '450px', 'float' : 'left', 'margin-left' : '30px'}),
     ],style={'overflow' : 'hidden'}),
 
    #html.Br(),
@@ -128,32 +128,32 @@ app.layout = html.Div([
         [
             dcc.Tab(
                 [
-                    html.Br(),
-                    html.P('graph_line_chart'),
+                    #html.Br(),
+                    #html.P('graph_line_chart'),
                     dcc.Graph(id='graph_line_chart')
                 ],
                 label='graph_line_chart'
             ),
             dcc.Tab(
                 [
-                    html.Br(),
-                    html.P('graph_4age_line_chart'),
+                    #html.Br(),
+                    #html.P('graph_4age_line_chart'),
                     dcc.Graph(id='graph_4age_line_chart'),
                 ],
                 label='graph_4age_line_chart'
             ),
             dcc.Tab(
                 [
-                    html.Br(),
-                    html.P('graph_gender_line'),
+                    #html.Br(),
+                    #html.P('graph_gender_line'),
                     dcc.Graph(id='graph_gender_line'),
                 ],
                 label='graph_gender_line'
             ),
             dcc.Tab(
                 [
-                    html.Br(),
-                    html.P('graph_suicide_line'),
+                    #html.Br(),
+                    #html.P('graph_suicide_line'),
                     dcc.Graph(id='graph_suicide_line'),
                 ],
                 label='graph_suicide_line'
@@ -161,10 +161,21 @@ app.layout = html.Div([
         ]
     ),
         # style={'margin-top': '100px'}
+    html.Div([
+        html.H3(
+            'Global share of the population with depression in all ages',
+            id='title_parallel',
+            style={'margin-left' : '150px', 'float' : 'left'}
+        ),
+    html.H3(
+            'Global prevalence of depression in men and women',
+            id='title_scatter_gender',
+            style={'margin-right' : '150px','float' : 'right'}
+        )],style={'overflow' : 'hidden'}),
 
     dcc.Graph(id='graph_parallel', style={'width' : '49%', 'height' : '450px', 'float' : 'left'}),
-    dcc.Graph(id='graph_scatter', style={'width' : '49%', 'height' : '450px', 'float' : 'right'})
-    ],style={'overflow' : 'hidden'}),
+    dcc.Graph(id='graph_scatter', style={'width' : '49%', 'height' : '450px', 'float' : 'right'}),
+    ], style={'overflow' : 'hidden'}),
     html.Br(),
     html.Div([
     dcc.RangeSlider(
@@ -244,14 +255,15 @@ def get_show_scatter(year_value):
     fig.update_layout(
         xaxis=dict(
             dtick = 1,
-            range=(0, 10),
+            range=(0, 9),
         ),
         yaxis=dict(
             dtick=1,
-            range=(0, 10),
+            range=(0, 9),
         ),
     )
     fig.update_layout(newshape_drawdirection= "diagonal")
+    fig.update_layout(template="simple_white")
     return fig
 @app.callback(
     Output("graph_bar", "figure"),
@@ -268,7 +280,7 @@ def get_show_bar(year_value, display_mode):
     else:
         select_data = select_data[::-1]
         select_data = select_data[:15]
-        select_data = select_data[::-1]
+        #select_data = select_data[::-1]
     #     select_data = select_data[0:15]
     #     select_data = select_data[::-1]
 
@@ -281,7 +293,7 @@ def get_show_bar(year_value, display_mode):
         text_auto='.2f'
     )
     fig.update_layout(paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)")
-    fig.update_traces(textposition="outside")
+    #fig.update_traces(textposition="outside")
     fig.update_traces(marker_color='#205EA8')
     return fig
 
@@ -318,6 +330,37 @@ def update_graph_map(year_value, region_value):
     #fig.update_layout(legend_x=1.03, legend_y=1.11)
     #title = 'Share of the population with depression, ' + str(year_value)
     return fig
+
+@app.callback(
+    Output("title_bar", "children"),
+    [
+        Input("year_slider", "value"),
+        Input('mode_switch', 'value')
+    ]
+)
+
+def update_title_bar(year_value, mode_switch):
+    title = 'Global ' + str(mode_switch)+ ' 15, ' + str(year_value)
+    return title
+
+
+@app.callback(
+    Output("title_parallel", "children"),
+    Input("year_slider", "value"),
+)
+
+def update_title_parallel(year_value):
+    title = 'Global share of the population with depression in all ages, ' + str(year_value)
+    return title
+
+@app.callback(
+    Output("title_scatter_gender", "children"),
+    Input("year_slider", "value"),
+)
+
+def update_title_scatter_gender(year_value):
+    title = 'Global prevalence of depression in men and women, ' + str(year_value)
+    return title
 
 @app.callback(
     Output("title_map_new", "children"),
@@ -365,7 +408,8 @@ def line_chart_creator(dff, all_age, country_title):
                     xref='paper', yref='paper', showarrow=False, align='left',
                     text=country_title)
     fig.update_layout(hovermode='x unified')
-    # fig.update_layout(paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)")
+
+    fig.update_layout(template="simple_white")
     return fig
 
 @app.callback(
@@ -410,6 +454,7 @@ def age_chart_creator(age_data, country_title):
                     xref='paper', yref='paper', showarrow=False, align='left',
                     text=country_title)
     fig.update_layout(hovermode='x unified')
+    fig.update_layout(template="simple_white")
     # fig.update_layout(paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)")
     return fig
 
@@ -449,6 +494,7 @@ def gender_line_creator(all_age_data, gender_data, country_title):
                        xref='paper', yref='paper', showarrow=False, align='left',
                        text=country_title)
     fig.update_layout(hovermode='x unified')
+    fig.update_layout(template="simple_white")
     # fig.update_layout(paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)")
     return fig
 
@@ -484,6 +530,7 @@ def suicide_line_creator(all_age_data, suicide_data, country_title):
                        xref='paper', yref='paper', showarrow=False, align='left',
                        text=country_title)
     fig.update_layout(hovermode='x unified')
+    fig.update_layout(template="simple_white")
     # fig.update_layout(paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)")
     return fig
 
@@ -522,6 +569,7 @@ def get_show_suicide_x_depress(slider_range):
     fig = px.scatter(df, x='suicide_change_rate', y='depression_change_rate',hover_name='Entity')
     fig.update_yaxes(range=[-850,850], zeroline= True,zerolinewidth=2, zerolinecolor='black')
     fig.update_xaxes(range=[-50,50], zeroline= True,zerolinewidth=2, zerolinecolor='black')
+    fig.update_layout(template="simple_white")
     return fig
 
 if __name__ == '__main__':
