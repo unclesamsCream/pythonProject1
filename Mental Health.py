@@ -163,14 +163,14 @@ app.layout = html.Div([
         # style={'margin-top': '100px'}
     html.Div([
         html.H3(
-            'Global share of the population with depression in all ages',
+            'Global share of the population with depression in all age groups',
             id='title_parallel',
-            style={'margin-left' : '150px', 'float' : 'left'}
+            style={'margin-left' : '100px', 'float' : 'left'}
         ),
     html.H3(
-            'Global prevalence of depression in men and women',
+            'Global prevalence of depression in males and females',
             id='title_scatter_gender',
-            style={'margin-right' : '150px','float' : 'right'}
+            style={'margin-right' : '140px','float' : 'right'}
         )],style={'overflow' : 'hidden'}),
 
     dcc.Graph(id='graph_parallel', style={'width' : '49%', 'height' : '450px', 'float' : 'left'}),
@@ -224,6 +224,7 @@ def get_show_parallel_c(year_value):
       dimensions=['10-14 years old (%)',  '15-49 years old (%)',
                   '50-69 years old (%)','70+ years old (%)','Age-standardized (%)'],
     )
+    #fig.update_traces(marker=dict(color='#205EA8'))
     return fig
 @app.callback(
     Output("graph_scatter", "figure"),
@@ -264,6 +265,7 @@ def get_show_scatter(year_value):
     )
     fig.update_layout(newshape_drawdirection= "diagonal")
     fig.update_layout(template="simple_white")
+    fig.update_traces(marker=dict(color='#205EA8'))
     return fig
 @app.callback(
     Output("graph_bar", "figure"),
@@ -350,7 +352,7 @@ def update_title_bar(year_value, mode_switch):
 )
 
 def update_title_parallel(year_value):
-    title = 'Global share of the population with depression in all ages, ' + str(year_value)
+    title = 'Global share of the population with depression in all age groups, ' + str(year_value)
     return title
 
 @app.callback(
@@ -359,7 +361,7 @@ def update_title_parallel(year_value):
 )
 
 def update_title_scatter_gender(year_value):
-    title = 'Global prevalence of depression in men and women, ' + str(year_value)
+    title = 'Global prevalence of depression in males and females, ' + str(year_value)
     return title
 
 @app.callback(
