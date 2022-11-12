@@ -144,8 +144,8 @@ app.layout = html.Div([
             ),
             dcc.Tab(
                 [
-                    #html.Br(),
-                    #html.P('graph_gender_line'),
+                    html.Br(),
+                    html.P('graph_gender_line'),
                     dcc.Graph(id='graph_gender_line'),
                 ],
                 label='graph_gender_line'
@@ -154,7 +154,7 @@ app.layout = html.Div([
                 [
                     #html.Br(),
                     #html.P('graph_suicide_line'),
-                    dcc.Graph(id='graph_suicide_line'),
+                    dcc.Graph(id='graph_suicide_line', style={'width' : '70%'}),
                 ],
                 label='graph_suicide_line'
             ),
@@ -520,17 +520,48 @@ def suicide_line_creator(all_age_data, suicide_data, country_title):
     # print(list(dff['Depression (%)']))
     fig.add_trace(go.Scatter(x=suicide_data['Year'], y=suicide_data['Suicide rate (deaths per 100,000 individuals)'],
                              mode='lines+markers',
-                             name='Suicide rate (deaths per 100,000 individuals)'
+                             name='Suicide rate (deaths per 100,000 individuals)',
+                             marker=dict(
+                                 color="#1f77b4"
+                             ),
                              ))
-    fig.add_trace(go.Scatter(x=all_age_data['Year'], y=all_age_data['Age-standardized (%)'],
+    fig.add_trace(go.Scatter(x=all_age_data['Year'], y=all_age_data['Age-standardized (%)']*1000,
+                             yaxis="y2",
                              mode='lines+markers',
-                             name='Depressive disorder rates (number suffering per 100,000)'
+                             name='Depressive disorder rates (number suffering per 100,000)',
+                             marker = dict(
+                                color="#ff7f0e"
+                             ),
                              ))
     fig.add_annotation(x=0, y=0, xanchor='left', yanchor='bottom',
                        xref='paper', yref='paper', showarrow=False, align='left',
                        text=country_title)
     fig.update_layout(hovermode='x unified')
     fig.update_layout(template="simple_white")
+    fig.update_layout(
+        yaxis=dict(
+            title="Suicide rate (deaths per 100,000 individuals)",
+            titlefont=dict(
+                color="#1f77b4"
+            ),
+            tickfont=dict(
+                color="#1f77b4"
+            )
+        ),
+
+        yaxis2=dict(
+            title="Depressive disorder rates (number suffering per 100,000)",
+            titlefont=dict(
+                color="#ff7f0e"
+            ),
+            tickfont=dict(
+                color="#ff7f0e"
+            ),
+            anchor="x",
+            overlaying="y",
+            side="right"
+        ),
+    )
     # fig.update_layout(paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)")
     return fig
 
