@@ -65,7 +65,7 @@ app.layout = html.Div([
     html.Div([
         html.H5(
             'Tao Tang, Haoyu Guo',
-            style={'textAlign' : 'right'}
+            style={'textAlign' : 'right', 'margin-right' : '55px'}
         )
     ]),
 
@@ -73,13 +73,13 @@ app.layout = html.Div([
     html.Div([
     html.P(
         'Select a Region',
-        # style={'textAlign' : 'center'}
+        style={'margin-left' : '30px'}
     ),
     dcc.Dropdown(
         ['world', 'europe', 'asia', 'africa', 'north america', 'south america'],
         id='region_selection',
         #style={'width' : '30%', 'height' : '500px', 'float' : 'left'}
-        style={'width' : '30%'}
+        style={'width' : '30%', 'margin-left' : '15px'}
     )
     ]),
 
@@ -97,7 +97,7 @@ app.layout = html.Div([
         id='title_bar',
         style={'margin-right' : '100px','float' : 'right'}
         ),
-        dcc.Graph(id="graph_map", style={'width' : '69%', 'height' : '450px', 'float' : 'left', 'margin-left' : '50px'}),
+        dcc.Graph(id="graph_map", style={'width' : '69%', 'height' : '450px', 'float' : 'left', 'margin-left' : '55px'}),
         dcc.RadioItems(
                 id='mode_switch',
                 options=['Top','Last'],
@@ -119,7 +119,7 @@ app.layout = html.Div([
         value=df[0]['Year'].min(),
         marks={str(year): str(year) for year in df[0]['Year'].unique()},
     )
-    ],style={'overflow' : 'hidden'}),
+    ],style={'width' : '92%', 'margin' : '0 auto', 'overflow' : 'hidden'}),
     html.Br(),
 
     # * Line chart
@@ -130,7 +130,7 @@ app.layout = html.Div([
                 [
                     #html.Br(),
                     #html.P('graph_line_chart'),
-                    dcc.Graph(id='graph_line_chart')
+                    dcc.Graph(id='graph_line_chart', style={'width' : '70%', 'margin' : '0 auto'})
                 ],
                 label='graph_line_chart'
             ),
@@ -138,27 +138,27 @@ app.layout = html.Div([
                 [
                     #html.Br(),
                     #html.P('graph_4age_line_chart'),
-                    dcc.Graph(id='graph_4age_line_chart'),
+                    dcc.Graph(id='graph_4age_line_chart', style={'width' : '70%', 'margin' : '0 auto'}),
                 ],
                 label='graph_4age_line_chart'
             ),
             dcc.Tab(
                 [
-                    html.Br(),
-                    html.P('graph_gender_line'),
-                    dcc.Graph(id='graph_gender_line'),
+                    #html.Br(),
+                    #html.P('graph_gender_line'),
+                    dcc.Graph(id='graph_gender_line', style={'width' : '70%', 'margin' : '0 auto'}),
                 ],
                 label='graph_gender_line'
             ),
             dcc.Tab(
                 [
                     #html.Br(),
-                    #html.P('graph_suicide_line'),
-                    dcc.Graph(id='graph_suicide_line', style={'width' : '70%'}),
+                    html.P('graph_suicide_line'),
+                    dcc.Graph(id='graph_suicide_line', style={'width' : '70%', 'margin' : '0 auto'}),
                 ],
                 label='graph_suicide_line'
             ),
-        ]
+        ],style={'width' : '90%', 'margin' : '0 auto'}
     ),
         # style={'margin-top': '100px'}
     html.Div([
@@ -172,7 +172,8 @@ app.layout = html.Div([
             id='title_scatter_gender',
             style={'margin-right' : '140px','float' : 'right'}
         )],style={'overflow' : 'hidden'}),
-
+    html.Br(),
+    html.Br(),
     dcc.Graph(id='graph_parallel', style={'width' : '49%', 'height' : '450px', 'float' : 'left'}),
     dcc.Graph(id='graph_scatter', style={'width' : '49%', 'height' : '450px', 'float' : 'right'}),
     ], style={'overflow' : 'hidden'}),
@@ -565,6 +566,7 @@ def suicide_line_creator(all_age_data, suicide_data, country_title):
         ),
     )
     # fig.update_layout(paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)")
+    fig.update_layout(showlegend=False)
     return fig
 
 @app.callback(
