@@ -57,7 +57,7 @@ app.layout = html.Div([
     # * Title: 'THe Worldwide Mental Health Depression Disorder Data Visualization'
     html.Div(
         html.H1(
-            'THe Worldwide Mental Health Depression Disorder Data Visualization',
+            'THe Worldwide Depression Disorder Data Visualization',
             style={'textAlign': 'center'}
         )
     ),
@@ -132,7 +132,7 @@ app.layout = html.Div([
                     #html.P('graph_line_chart'),
                     dcc.Graph(id='graph_line_chart', style={'width' : '70%', 'margin' : '0 auto'})
                 ],
-                label='graph_line_chart'
+                label='Prevalence of Depression in all ages'
             ),
             dcc.Tab(
                 [
@@ -140,7 +140,7 @@ app.layout = html.Div([
                     #html.P('graph_4age_line_chart'),
                     dcc.Graph(id='graph_4age_line_chart', style={'width' : '70%', 'margin' : '0 auto'}),
                 ],
-                label='graph_4age_line_chart'
+                label='Prevalence of Depression in 4 age groups'
             ),
             dcc.Tab(
                 [
@@ -148,15 +148,15 @@ app.layout = html.Div([
                     #html.P('graph_gender_line'),
                     dcc.Graph(id='graph_gender_line', style={'width' : '70%', 'margin' : '0 auto'}),
                 ],
-                label='graph_gender_line'
+                label='Prevalence of Depression in males and females'
             ),
             dcc.Tab(
                 [
                     #html.Br(),
-                    html.P('graph_suicide_line'),
+                    #html.P('graph_suicide_line'),
                     dcc.Graph(id='graph_suicide_line', style={'width' : '70%', 'margin' : '0 auto'}),
                 ],
-                label='graph_suicide_line'
+                label='Suicide rate VS. Depression rate'
             ),
         ],style={'width' : '90%', 'margin' : '0 auto'}
     ),
@@ -179,13 +179,19 @@ app.layout = html.Div([
     ], style={'overflow' : 'hidden'}),
     html.Br(),
     html.Div([
-    dcc.RangeSlider(
-        id='year-range-slider',
-        min=1990, max=2017, step=1,
-        marks={str(year): str(year) for year in df[0]['Year'].unique()},
-        value=[1990, 2017]
-    ),
-    dcc.Graph(id='graph_suicide_depression_scatter',style={'overflow' : 'hidden'})
+        html.H3(
+        'The rate of change in depression rate VS. The rate of change in suicide rate',
+        id='title_scatter_suicide',
+        style={'margin-left' : '450px'}
+        ),
+        dcc.Graph(id='graph_suicide_depression_scatter',style={'width' : '40%', 'height' : '600px', 'margin' : '0 auto', 'overflow' : 'hidden'}),
+        html.Div([
+            dcc.RangeSlider(
+            id='year-range-slider',
+            min=1990, max=2017, step=1,
+            marks={str(year): str(year) for year in df[0]['Year'].unique()},
+            value=[1990, 2017]),
+        ],style={'width' : '92%', 'margin' : '0 auto', 'overflow' : 'hidden'}),
     ]),
     # dcc.RangeSlider(
     #     id='year-range-slider',
@@ -605,6 +611,7 @@ def get_show_suicide_x_depress(slider_range):
     fig.update_yaxes(range=[-850,850], zeroline= True,zerolinewidth=2, zerolinecolor='black')
     fig.update_xaxes(range=[-50,50], zeroline= True,zerolinewidth=2, zerolinecolor='black')
     fig.update_layout(template="simple_white")
+    fig.update_traces(marker_color='#205EA8')
     return fig
 
 if __name__ == '__main__':
