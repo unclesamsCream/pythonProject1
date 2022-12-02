@@ -12,6 +12,7 @@ import numpy as np
 import pandas as pd
 import plotly.express as px
 from dash import Dash, Input, Output, dcc, html
+import dash
 import plotly.graph_objs as go
 from urllib.request import urlopen
 import json
@@ -46,28 +47,65 @@ df.append(df1)
 gender_data = pd.read_csv('gender.csv')
 age_data = pd.read_csv('age.csv')
 suicide_data = pd.read_csv('suicide.csv')
-
+data_fusion = pd.read_csv('data_fusion.csv')
 # * My color scale
 # colorscale = ["#f7fbff", "#ebf3fb", "#deebf7", "#d2e3f3", "#c6dbef", "#b3d2e9", "#9ecae1", "#85bcdb"]
 
 # endpts = list(np.linspace(0, 8, len(colorscale)))
 
 # * Design the layout of the whole data visualization
-app.layout = html.Div([
+colors = {
+    'background': '#f2f2f2',
+    'text': '#323232'
+}
+
+app.layout = html.Div(style={'backgroundColor': colors['background']},children = [
+    html.Br(),
     # * Title: 'THe Worldwide Mental Health Depression Disorder Data Visualization'
     html.Div(
         html.H1(
             'THe Worldwide Depression Disorder Data Visualization',
-            style={'textAlign': 'center'}
-        )
+            style={'padding': '2%','textAlign': 'center'}
+        ),
+        style={
+            'background-color': 'white',
+            # 'margin-top': '2%',
+            # 'width' : '%',
+            # 'height' : '200%',
+            'margin-bottom': '1%',
+            'margin-right':'3%',
+            'margin-left' :'3%'
+        }
     ),
-
-    html.Div([
-        html.H5(
-            'Tao Tang, Haoyu Guo',
-            style={'textAlign' : 'right', 'margin-right' : '55px'}
-        )
-    ]),
+    html.Div(
+        dcc.Checklist(
+            id='region_choice',
+            options=[
+                {'label': 'World', 'value': 'World'},
+                {'label': 'Asia', 'value': 'Asia'},
+                {'label': 'Europe', 'value': 'Europe'},
+                {'label': 'Africa', 'value': 'Africa'},
+                {'label': 'Oceania', 'value': 'Oceania'},
+                {'label': 'Americas', 'value': 'Americas'},
+            ],
+            value=['World']
+        ),
+        style={
+            'background-color': 'white',
+            # 'margin-top': '2%',
+            # 'width' : '%',
+            # 'height' : '200%',
+            'margin-bottom': '1%',
+            'margin-right': '3%',
+            'margin-left': '3%'
+        }
+    ),
+    # html.Div([
+    #     html.H5(
+    #         'Tao Tang, Haoyu Guo',
+    #         style={'textAlign' : 'right', 'margin-right' : '55px'}
+    #     )
+    # ]),
 
     # * Select a region
     html.Div([
@@ -86,7 +124,8 @@ app.layout = html.Div([
     html.Br(),
 
     # * Map and Bar
-    html.Div([
+    html.Div(
+        [
         html.H3(
         'Share of the population with depression',
         id='title_map_new',
@@ -146,7 +185,7 @@ app.layout = html.Div([
 
                     #* Scatterplots
                     #dcc.Graph(id='graph_parallel', style={'width' : '50%', 'height' : '450px', 'float' : 'left'}),
-                    dcc.Graph(id='graph_scatter', style={'width' : '50%', 'height' : '450px', 'float' : 'right'}),
+                    dcc.Graph(id='graph_gender_scatter', style={'width' : '50%', 'height' : '450px', 'float' : 'right'}),
                     dcc.Graph(id='graph_suicide_depression_scatter',style={'width' : '50%', 'height' : '450px', 'float' : 'left'}),
                     html.Br(),
                     #* Parallel coordinates
@@ -170,8 +209,8 @@ app.layout = html.Div([
                         'Select a chart',
                         style={'margin-left' : '70px'}),
                     dcc.Dropdown(
-                        ['Prevalence of Depression in all ages', 
-                        'Prevalence of Depression in 4 age groups', 
+                        ['Prevalence of Depression in all ages',
+                        'Prevalence of Depression in 4 age groups',
                         'Prevalence of Depression in males and females',
                         'Suicide VS Depression'],
                         id='details_selection',
@@ -395,6 +434,7 @@ def line_chart_creator(dff, all_age, country_title):
                              ))
     # fig = px.scatter(dff, x='Year', y='Depression (%)')
     # fig.update_traces(mode='lines+markers')
+    # fig.update_trace(dff, x='Year', y='Depression(%)')
     # fig.update_xaxes(showgrid=False)
     fig.add_annotation(x=0, y=0, xanchor='left', yanchor='bottom',
                     xref='paper', yref='paper', showarrow=False, align='left',
@@ -474,7 +514,7 @@ def gender_line_creator(all_age_data, gender_data, country_title):
                              mode='lines+markers',
                              name='Prevalence in males (%)'
                              ))
-    fig.add_trace(go.Scatter(x=all_age_data['Year'], y=all_age_data['15-49 years old (%)'],
+    fig.add_trace(go.Scatter(x=all_age_data['Year'], y=all_age_data['Age-standardized (%)'],
                              mode='lines+markers',
                              name='Both sexes'
                              ))
@@ -558,21 +598,6 @@ def suicide_line_creator(all_age_data, suicide_data, country_title):
     fig.update_layout(showlegend=False)
     return fig
 
-@app.callback(
-    Output("graph_suicide_depression_scatter", "figure"),
-    Input("year_slider", "value"))
-
-def get_show_suicide_x_depress(selected_year):
-    suicide = suicide_data[suicide_data['Year'] == selected_year]
-    #depression_rate = suicide_data[suicide_data['Year'] == selected_year]['Depressive disorder rates (number suffering per 100,000)']
-    fig = px.scatter(suicide, x = 'Depressive disorder rates (number suffering per 100,000)', 
-                    y = 'Suicide rate (deaths per 100,000 individuals)',
-                    hover_name='Entity')
-    fig.update_layout(template="simple_white")
-    fig.update_traces(marker=dict(color='#205EA8'))
-    
-    return fig
-
 # def get_show_suicide_x_depress(slider_range):
 #     # df = px.data.iris() # replace with your own data source
 #     old_year, last_year = slider_range
@@ -617,9 +642,8 @@ def get_show_suicide_x_depress(selected_year):
         Input('details_selection', 'value')
     ]
 )
-
-# 'Prevalence of Depression in all ages', 
-# 'Prevalence of Depression in 4 age groups', 
+# 'Prevalence of Depression in all ages',
+# 'Prevalence of Depression in 4 age groups',
 # 'Prevalence of Depression in males and females',
 # 'Suicide VS Depression'
 def update_details_graph(clickData, details_selection):
@@ -636,37 +660,183 @@ def update_details_graph(clickData, details_selection):
 
 @app.callback(
     Output("graph_parallel", "figure"),
-    Input("year_slider", "value")
-
+    Input("year_slider", "value"),
+    Input('region_choice', 'value'),
 )
-def get_show_parallel_c(year_value):
-    data = age_data[age_data['Year'] == year_value]
-    fig = px.parallel_coordinates(data,
-      dimensions=['10-14 years old (%)',  '15-49 years old (%)',
+def get_show_parallel_c(year_value, region_value):
+    age = age_data[age_data['Year'] == year_value]
+    data = pd.DataFrame()
+    # print(region_value)
+    if not region_value or 'World' in region_value:
+        data = age
+    else:
+        data = age.loc[age['region'] == region_value[0]]
+        for index in range(1,len(region_value)):
+            temp = age.loc[age['region'] == region_value[index]]
+            # pd.set_option('display.max_columns', None)
+            # print("===========",temp)
+            data = pd.concat([data,temp])
+    data['region_id'] = data['region'].map({'Asia': 0.9, 'Europe': 0.7, 'Africa': 0.5,'Oceania':0.3,'Americas':0.1})
+    fig = px.parallel_coordinates(
+        data,
+        dimensions=['10-14 years old (%)',  '15-49 years old (%)',
                   '50-69 years old (%)','70+ years old (%)','Age-standardized (%)'],
+        color='region_id',
+        range_color=[0.0, 1.0],
+        color_continuous_scale=[
+            (0.0, "#faa25a"), (0.2, "#faa25a"),
+            (0.2, "#b05dfb"), (0.4, "#b05dfb"),
+            (0.4, "#1dcd95"), (0.6, "#1dcd95"),
+            (0.6, "#ea563c"), (0.8, "#ea563c"),
+            (0.8, "#7169fb"), (1.0, "#7169fb"),
+        ]
     )
-    #fig.update_traces(marker=dict(color='#205EA8')
-    #fig.update_traces(selected_data = selected_data)
+        # showscale=True,
+    fig.update_layout(coloraxis_colorbar=dict(
+        title="Continent",
+        tickvals=[0.9, 0.7, 0.5, 0.3, 0.1],
+        ticktext=["Asia",'Europe','Africa','Americas','Oceania' ],
+        lenmode="pixels", len=200,
+    ))
+    # data['region_id'] = data['region'].map({'Asia': 1, 'Europe': 2, 'Africa': 3,'Oceania':4,'Americas':5})
+    # fig = go.Figure(data=
+    #     go.Parcoords(
+    #         line=dict(color=data['region_id'],
+    #             color_continuous_scale=[
+    #             (1, "#7169fb"),
+    #             (2, "#ea563c"),
+    #             (3, "#1dcd95"),
+    #             (4, "#b05dfb"),
+    #             (5, "#faa25a"),],
+    #         showscale = False),
+    #         dimensions=list([
+    #             dict(label='10-14 years old (%)', values=data['10-14 years old (%)']),
+    #             dict(label='15-49 years old (%)', values=data['15-49 years old (%)']),
+    #             dict(label='50-69 years old (%)', values=data['50-69 years old (%)']),
+    #             dict(label='70+ years old (%)', values=data['70+ years old (%)']),
+    #             dict(label='Age-standardized (%)', values=data['Age-standardized (%)'])
+    #         ])
+    #     )
+    # )
+    # fig.update_layout(showlegend=False, paper_bgcolor='rgba(0, 0, 0, 0)', plot_bgcolor='rgba(0, 0, 0, 0)')
+    # fig.update_layout(
+    #     plot_bgcolor='white',
+    #     paper_bgcolor='lightgray'
+    # )
+    #fig.update_traces(marker=dict(color='#205EA8'))
     return fig
-
 @app.callback(
-    Output("graph_scatter", "figure"),
-    Input("year_slider", "value")
+    Output("graph_suicide_depression_scatter", "figure"),
+    # Output("graph_gender_scatter", "figure"),
+    Input("year_slider", "value"),
+    Input('region_choice', 'value'),
+    # Input('graph_suicide_depression_scatter', 'selectedData'),
+    # Input('graph_gender_scatter', 'selectedData'),
 )
+# def callback(selected_year,selection1, selection2):
+#     # print("11111",selection1)
+#     # print("22222",selection2)
+#
+#     # suicide = suicide_data[suicide_data['Year'] == selected_year]
+#     # gender = gender_data[gender_data['Year'] == selected_year]
+#     data =  data_fusion[data_fusion['Year'] == selected_year]
+#     selectedpoints = data.index
+#     for selected_data in [selection1, selection2]:
+#         if selected_data and selected_data['points']:
+#             selectedpoints = np.intersect1d(selectedpoints, [p['customdata'] for p in selected_data['points']])
+#     print(selectedpoints)
+#     return [get_show_suicide_x_depress(selectedpoints),
+#             get_gender_scatter(selectedpoints)]
+def get_show_suicide_x_depress(year_value, region_value):
+    sucide = data_fusion.loc[data_fusion['Year'] == year_value]
+    data = pd.DataFrame()
+    # print(region_value)
+    if not region_value or 'World' in region_value:
+        data = sucide
+    else:
+        data = sucide.loc[sucide['region'] == region_value[0]]
+        for index in range(1,len(region_value)):
+            temp = sucide.loc[sucide['region'] == region_value[index]]
+            # pd.set_option('display.max_columns', None)
+            # print("===========",temp)
+            data = pd.concat([data,temp])
+    # print(data)
+    # selectedpoints = suicide.Entity
+    # for selected_data in [selection1, selection2]:
+    #     if selected_data and selected_data['points']:
+    #         selectedpoints = np.intersect1d(selectedpoints, [p['hovertext'] for p in selected_data['points']])
+    # print(selectedpoints)
+    fig = px.scatter(data,
+        x = 'Depressive disorder rates (number suffering per 100,000)',
+        y = 'Suicide rate (deaths per 100,000 individuals)',
+        color='region',
+        color_discrete_map={
+            "Asia": "#7169fb",
+            "Europe": "#ea563c",
+            "Africa": "#1dcd95",
+            "Oceania": "#b05dfb",
+            "Americas": "#faa25a",
+            },
+        hover_name='Entity')
+    # fig.update_traces(selectedpoints=selectedpoints,
+    #                   customdata=suicide.Entity,
+    #                   mode='markers+text', marker={'color': 'rgba(0, 116, 217, 0.7)', 'size': 20},
+    #                   unselected={'marker': {'opacity': 0.3}, 'textfont': {'color': 'rgba(0, 0, 0, 0)'}})
+    #
+    # fig.update_layout(margin={'l': 20, 'r': 0, 'b': 15, 't': 5}, dragmode='select', hovermode=False)
 
-def get_show_scatter(year_value):
-    data = gender_data[gender_data['Year'] == year_value]
+    # fig.update_traces(selectedpoints=selectedpoints,
+    #                   customdata=data_fusion.index)
+    fig.update_layout(template="simple_white")
+    # fig.update_traces(marker=dict(color='#205EA8'))
+
+    return fig
+@app.callback(
+    # Output("graph_suicide_depression_scatter", "figure"),
+    Output("graph_gender_scatter", "figure"),
+    Input("year_slider", "value"),
+    Input('region_choice', 'value'),
+    # Input('graph_suicide_depression_scatter', 'selectedData'),
+    # Input('graph_gender_scatter', 'selectedData'),
+)
+def get_gender_scatter(year_value,region_value):
+    gender = data_fusion.loc[data_fusion['Year'] == year_value]
+    data = pd.DataFrame()
+    # print(region_value)
+    if not region_value or 'World' in region_value:
+        data = gender
+    else:
+        data = gender.loc[gender['region'] == region_value[0]]
+        for index in range(1,len(region_value)):
+            temp = gender.loc[gender['region'] == region_value[index]]
+            # pd.set_option('display.max_columns', None)
+            # print("===========",temp)
+            data = pd.concat([data,temp])
+    # selectedpoints = data.Entity
+    # for selected_data in [selection1, selection2]:
+    #     if selected_data and selected_data['points']:
+    #         selectedpoints = np.intersect1d(selectedpoints, [p['hovertext'] for p in selected_data['points']])
     # print(data)
     fig = px.scatter(
         data,
         x="Prevalence in males (%)",
         y="Prevalence in females (%)",
+        color='region',
+        color_discrete_map={
+            "Asia": "#7169fb",
+            "Europe": "#ea563c",
+            "Africa": "#1dcd95",
+            "Oceania": "#b05dfb",
+            "Americas": "#faa25a",
+        },
         hover_name= "Entity"
         #text= "Entity"
         # color="species",
         # size='petal_length',
         # hover_data=['petal_width']
     )
+    # fig.update_traces(selectedpoints=selectedpoints,
+    #                   customdata=data_fusion.index)
     fig.add_shape(type="line",
       x0=0, y0=0, x1=10, y1=10,
       line=dict(
@@ -688,18 +858,17 @@ def get_show_scatter(year_value):
     )
     fig.update_layout(newshape_drawdirection= "diagonal")
     fig.update_layout(template="simple_white")
-    fig.update_traces(marker=dict(color='#205EA8'))
-    #fig.update_traces(selectedpoints = selected_data)
+    # fig.update_traces(marker=dict(color='#205EA8'))
     return fig
 
 # @app.callback(
 #     Output("graph_parallel", "figure"),
-#     Output("graph_scatter", "figure"),
+#     Output("graph_gender_scatter", "figure"),
 #     #Output("graph_suicide_depression_scatter", "figure"),
 #     [
 #         Input("year_slider", "value"),
 #         Input("graph_parallel", "selectedData"),
-#         Input("graph_scatter", "selectedData"),
+#         Input("graph_gender_scatter", "selectedData"),
 #         #Input("graph_suicide_depression_scatter", "selectedData")
 #     ]
 # )
