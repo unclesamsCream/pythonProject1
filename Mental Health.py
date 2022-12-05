@@ -59,9 +59,12 @@ colors = {
     'text': '#323232'
 }
 
-app.layout = html.Div(style={'backgroundColor': colors['background']},children = [
-    html.Br(),
+app.layout = \
+    html.Div(
+            style={'background-color': '#f2f2f2'},
+            children = [
     # * Title: 'THe Worldwide Mental Health Depression Disorder Data Visualization'
+    html.Br(),
     html.Div(
         html.H1(
             'THe Worldwide Depression Disorder Data Visualization',
@@ -78,29 +81,260 @@ app.layout = html.Div(style={'backgroundColor': colors['background']},children =
         }
     ),
     html.Div(
-        dcc.Checklist(
-            id='region_choice',
-            options=[
-                {'label': 'World', 'value': 'World'},
-                {'label': 'Asia', 'value': 'Asia'},
-                {'label': 'Europe', 'value': 'Europe'},
-                {'label': 'Africa', 'value': 'Africa'},
-                {'label': 'Oceania', 'value': 'Oceania'},
-                {'label': 'Americas', 'value': 'Americas'},
-            ],
-            value=['World']
-        ),
+        [
+            html.H5(
+                'Select Regions',
+                style={'padding': '2%','textAlign': 'center'}
+            ),
+            dcc.Checklist(
+                id='region_choice',
+                options=[
+                    {'label': 'World', 'value': 'World'},
+                    {'label': 'Asia', 'value': 'Asia'},
+                    {'label': 'Europe', 'value': 'Europe'},
+                    {'label': 'Africa', 'value': 'Africa'},
+                    {'label': 'Oceania', 'value': 'Oceania'},
+                    {'label': 'Americas', 'value': 'Americas'},
+                ],
+                value=['World'],
+                style={
+                    'padding': '1%',
+                    'display': 'flex',
+                    'justify-content': 'center'
+                }
+            ),
+        ],
         style={
             'background-color': 'white',
             # 'margin-top': '2%',
-            # 'width' : '%',
-            # 'height' : '200%',
+            'height' : '100px',
+            'width' : '23%',
+            'margin-left': '3%',
+            'float' : 'left',
+            'padding': '0.5%',
             'margin-bottom': '1%',
-            'margin-right': '3%',
-            'margin-left': '3%'
         }
     ),
-    # html.Div([
+    html.Div(
+        [
+            html.H5(
+                'Select Year',
+                style={'padding': '0.8%','textAlign': 'center'}
+            ),
+            dcc.Slider(
+                df[0]['Year'].min(),
+                df[0]['Year'].max(),
+                step=None,
+                id='year_slider',
+                value=df[0]['Year'].min(),
+                marks={str(year): str(year) for year in df[0]['Year'].unique()},
+            ),
+        ],
+        style={
+            'background-color': 'white',
+            'height' : '100px',
+            'width' : '70%',
+            'margin-right': '3%',
+            'float' : 'right',
+            'padding': '0.5%',
+            'margin-bottom': '1%',
+            # 'margin': '0 auto', 'overflow': 'hidden'
+        }
+    ),
+    html.Div(
+        [
+            html.H3(
+                'Top 15',
+                id='title_bar',
+                style={'padding': '2%', 'textAlign': 'center'}
+                # style={'margin-right': '100px', 'float': 'right'}
+            ),
+            dcc.RadioItems(
+                id='mode_switch',
+                options=['Top', 'Last'],
+                value='Top',
+                style={
+                    'display': 'flex',
+                    'justify-content': 'center'
+                }
+            ),
+            dcc.Graph(id='graph_bar',
+                      # style={'width': '70%', 'height': '600px'}
+                      ),
+        ],
+        style={
+            'background-color': 'white',
+            'height': '500px',
+            'width': '27.5%',
+            'margin-left': '3%',
+            'float': 'left',
+            'margin-bottom': '1%',
+            'padding': '1%'
+            # 'margin': '0 auto', 'overflow': 'hidden'
+        }
+    ),
+    html.Div(
+        [
+            html.H3(
+                'Global share of the population with depression in all age groups',
+                id='title_parallel',
+                style={'padding': '2%', 'text-align': 'center'}
+            ),
+            dcc.Graph(id='graph_parallel',
+                      # style={'width' : '100%', 'height' : '550px', 'margin' : '0 auto', 'overflow' : 'hidden'}
+                      ),
+        ],
+        style={
+            'background-color': 'white',
+            'height': '500px',
+            'width': '65.5%',
+            'margin-right': '3%',
+            'float': 'right',
+            'overflow': 'hidden',
+            'margin-bottom': '1%',
+            'padding': '1%'
+            # 'margin': '0 auto', 'overflow': 'hidden'
+        }
+    ),
+    html.Div(
+        [
+            html.H3(
+                'The rate of change in depression rate VS. The rate of change in suicide rate',
+                id='title_scatter_gender',
+                style={'padding': '2%','textAlign': 'center'}
+            ),
+            dcc.Graph(id='graph_suicide_depression_scatter',
+                style={
+                  # 'height': '500px',
+                  'margin': 'auto'
+                }
+            ),
+        ],
+        style={
+            'background-color': 'white',
+            'height' : '500px',
+            'width': '46.5%',
+            'margin-left': '3%',
+            'float': 'left',
+            'overflow': 'hidden',
+            'margin-bottom': '1%',
+            # 'padding': '1%'
+            # 'margin': '0 auto', 'overflow': 'hidden'
+        }
+    ),
+    html.Div(
+        [
+            html.H3(
+                'Global prevalence of depression in males and females',
+                id='title_scatter_suicide',
+                style={'padding': '2%','textAlign': 'center'}
+            ),
+            dcc.Graph(id='graph_gender_scatter',
+                style={
+                    # 'height' : '500px',
+                    'margin': 'auto'
+                }
+            ),
+        ],
+        style={
+            'background-color': 'white',
+            'height' : '500px',
+            'width': '46.5%',
+            'margin-right': '3%',
+            'float': 'right',
+            'overflow': 'hidden',
+            'margin-bottom': '1%',
+            # 'padding': '1%'
+            # 'margin': '0 auto', 'overflow': 'hidden'
+        }
+    ),
+
+    html.Div(
+        [
+            html.H3(
+                'Share of the population with depression',
+                id='title_map_new',
+                style={'padding': '0.8%','textAlign': 'center'}
+            ),
+            dcc.Graph(id="graph_map",
+                      # style={'width': '69%', 'height': '450px', 'float': 'left', 'margin-left': '55px'}
+            ),
+            # html.Div(
+            #     [
+            #         html.P(
+            #             'Select a Region',
+            #             style={'margin-left': '30px'}
+            #         ),
+            #         dcc.Dropdown(
+            #             ['world', 'europe', 'asia', 'africa', 'north america', 'south america'],
+            #             id='region_selection',
+            #             # style={'width' : '30%', 'height' : '500px', 'float' : 'left'}
+            #             # style={'width': '30%', 'margin-left': '15px'}
+            #         )
+            #     ]
+            # ),
+        ],
+        style={
+            'background-color': 'white',
+            'height': '550px',
+            'width': '50%',
+            'margin-left': '3%',
+            'float': 'left',
+            'overflow': 'hidden',
+            'margin-bottom': '1%',
+            'padding': '1%'
+            # 'margin': '0 auto', 'overflow': 'hidden'
+        }
+    ),
+    html.Div(
+        [
+        dcc.Tabs(
+            id='details_selection',
+            value='tab-1',
+            children=
+            [
+            dcc.Tab(
+                value='tab-1',
+                label='Prevalence of Depression in Age Standardized & All ages'
+            ),
+            dcc.Tab(
+                value='tab-2',
+                label='Prevalence of Depression in 4 Age Groups'
+            ),
+            dcc.Tab(
+                value='tab-3',
+                label='Prevalence of Depression in Males and Females'
+            ),
+            dcc.Tab(
+                value='tab-4',
+                label='Suicide rate VS. Depression rate'
+            ),
+            ]
+        ),
+        html.H3(
+            'Prevalence of Depression in Age Standardized & All ages',
+            id='title_details_graph',
+            style={'text-align': 'center'}
+        ),
+        dcc.Graph(
+            id='details_line_charts',
+            # style={'width': '70%', 'margin': '0 auto'}
+        ),
+        ],
+        style={
+            'background-color': 'white',
+            'height' : '550px',
+            'width': '43%',
+            'margin-right': '3%',
+            'float': 'right',
+            'overflow': 'hidden',
+            'margin-bottom': '1%',
+            # 'padding': '1%'
+            # 'margin': '0 auto', 'overflow': 'hidden'
+        }
+    ),
+
+# html.Div([
     #     html.H5(
     #         'Tao Tang, Haoyu Guo',
     #         style={'textAlign' : 'right', 'margin-right' : '55px'}
@@ -108,128 +342,48 @@ app.layout = html.Div(style={'backgroundColor': colors['background']},children =
     # ]),
 
     # * Select a region
-    html.Div([
-    html.P(
-        'Select a Region',
-        style={'margin-left' : '30px'}
-    ),
-    dcc.Dropdown(
-        ['world', 'europe', 'asia', 'africa', 'north america', 'south america'],
-        id='region_selection',
-        #style={'width' : '30%', 'height' : '500px', 'float' : 'left'}
-        style={'width' : '30%', 'margin-left' : '15px'}
-    )
-    ]),
 
-    html.Br(),
-
-    # * Map and Bar
-    html.Div(
-        [
-        html.H3(
-        'Share of the population with depression',
-        id='title_map_new',
-        style={'margin-left' : '300px', 'float' : 'left'}
-        ),
-        html.H3(
-        'Top 15',
-        id='title_bar',
-        style={'margin-right' : '100px','float' : 'right'}
-        ),
-        dcc.Graph(id="graph_map", style={'width' : '69%', 'height' : '450px', 'float' : 'left', 'margin-left' : '55px'}),
-        dcc.RadioItems(
-                id='mode_switch',
-                options=['Top','Last'],
-                value='Top',
-                style={'margin-right' : '50px','float' : 'right'}
-        ),
-        dcc.Graph(id='graph_bar', style={'width' : '25%', 'height' : '450px', 'float' : 'left', 'margin-left' : '30px'}),
-    ],style={'overflow' : 'hidden'}),
-
-   #html.Br(),
-
-    # * Slider
-    html.Div([
-        dcc.Slider(
-        df[0]['Year'].min(),
-        df[0]['Year'].max(),
-        step=None,
-        id='year_slider',
-        value=df[0]['Year'].min(),
-        marks={str(year): str(year) for year in df[0]['Year'].unique()},
-    )
-    ],style={'width' : '92%', 'margin' : '0 auto', 'overflow' : 'hidden'}),
-    html.Br(),
 
     # * Line chart
-    html.Div([
-    dcc.Tabs(
-        [
-            #* Overview
-            dcc.Tab(
-                [
-                    html.Br(),
-                    html.Br(),
-                    html.Br(),
-                    #*Titles
-                    html.Div([
-                        html.H3(
-                        'The rate of change in depression rate VS. The rate of change in suicide rate',
-                        id='title_scatter_suicide',
-                    style={'margin-left' : '100px', 'float' : 'left'}),
-                        html.H3(
-                        'Global prevalence of depression in males and females',
-                        id='title_scatter_gender',
-                    style={'margin-right' : '140px','float' : 'right'})]
-                    ,style={'overflow' : 'hidden'}),
-
-                    #* Scatterplots
-                    #dcc.Graph(id='graph_parallel', style={'width' : '50%', 'height' : '450px', 'float' : 'left'}),
-                    dcc.Graph(id='graph_gender_scatter', style={'width' : '50%', 'height' : '450px', 'float' : 'right'}),
-                    dcc.Graph(id='graph_suicide_depression_scatter',style={'width' : '50%', 'height' : '450px', 'float' : 'left'}),
-                    html.Br(),
-                    #* Parallel coordinates
-                    html.Div([
-                        html.H3(
-                            'Global share of the population with depression in all age groups',
-                            id='title_parallel',
-                            style={'text-align' : 'center'}),
-                        dcc.Graph(id='graph_parallel', style={'width' : '100%', 'height' : '550px', 'margin' : '0 auto', 'overflow' : 'hidden'}),
-                        ]),
-                ],
-                label='Overview of global depression situation'
-            ),
-
+    # html.Div([
+    # dcc.Tabs(
+    #     [
+    #         #* Overview
+    #         dcc.Tab(
+    #             [
+    #                 html.Br(),
+    #                 html.Br(),
+    #                 html.Br(),
+    #                 #*Titles
+    #                 html.Div([
+    #                     html.H3(
+    #                     'The rate of change in depression rate VS. The rate of change in suicide rate',
+    #                     id='title_scatter_suicide',
+    #                 style={'margin-left' : '100px', 'float' : 'left'}),
+    #                     html.H3(
+    #                     'Global prevalence of depression in males and females',
+    #                     id='title_scatter_gender',
+    #                 style={'margin-right' : '140px','float' : 'right'})]
+    #                 ,style={'overflow' : 'hidden'}),
+    #
+    #                 #* Scatterplots
+    #                 #dcc.Graph(id='graph_parallel', style={'width' : '50%', 'height' : '450px', 'float' : 'left'}),
+    #                 dcc.Graph(id='graph_gender_scatter', style={'width' : '50%', 'height' : '450px', 'float' : 'right'}),
+    #                 dcc.Graph(id='graph_suicide_depression_scatter',style={'width' : '50%', 'height' : '450px', 'float' : 'left'}),
+    #                 html.Br(),
+    #                 #* Parallel coordinates
+    #                 html.Div([
+    #                     html.H3(
+    #                         'Global share of the population with depression in all age groups',
+    #                         id='title_parallel',
+    #                         style={'text-align' : 'center'}),
+    #                     dcc.Graph(id='graph_parallel', style={'width' : '100%', 'height' : '550px', 'margin' : '0 auto', 'overflow' : 'hidden'}),
+    #                     ]),
+    #             ],
+    #             label='Overview of global depression situation'
+    #         ),
+    #
             #* Details
-            dcc.Tab(
-                [
-                    html.Br(),
-                    #* select the line chart
-                    html.P(
-                        'Select a chart',
-                        style={'margin-left' : '70px'}),
-                    dcc.Dropdown(
-                        ['Prevalence of Depression in all ages',
-                        'Prevalence of Depression in 4 age groups',
-                        'Prevalence of Depression in males and females',
-                        'Suicide VS Depression'],
-                        id='details_selection',
-                        style={'width' : '45%', 'margin-left' : '36px'}
-                    ),
-
-                    html.Br(),
-                    #* The title of details line chart
-                    html.H3(
-                        'Prevalence of Depression in all ages',
-                        id='title_details_graph',
-                        style={'text-align' : 'center'}
-                        ),
-                    #* Charts
-                    dcc.Graph(id='details_line_charts', style={'width' : '70%', 'margin' : '0 auto'})
-                ],
-                label='Details of a specific country or region'
-            ),
-
             # dcc.Tab(
             #     [
             #         #html.Br(),
@@ -262,8 +416,9 @@ app.layout = html.Div(style={'backgroundColor': colors['background']},children =
             #     ],
             #     label='Suicide rate VS. Depression rate'
             # ),
-        ], style={'width' : '90%', 'margin' : '0 auto'}
-    )], style={'overflow' : 'hidden'}),
+    #     ], style={'width' : '90%', 'margin' : '0 auto'}
+    # )], style={'overflow' : 'hidden'}),
+    #
     # dcc.RangeSlider(
     #     id='year-range-slider',
     #     min=1990, max=2017, step=1,
@@ -271,7 +426,130 @@ app.layout = html.Div(style={'backgroundColor': colors['background']},children =
     #     value=[1990, 2017]
     # ),
     # dcc.Graph(id='graph_suicide_depression_scatter')
+    html.Br(),
+    html.Br(),
+    html.Br(),
+    html.Br(),
+    html.Br(),
+    html.Br(),
+    html.Br(),
+    html.Br(),
+    html.Br(),
+    html.Br(),
+    html.Br(),
+    html.Br(),
+    html.Br(),
+    html.Br(),
+    html.Br(),
+    html.Br(),
+    html.Br(),
+    html.Br(),
+    html.Br(),
+    html.Br(),
+    html.Br(),
+    html.Br(),
+    html.Br(),
+    html.Br(),
+    html.Br(),
+    html.Br(),
+    html.Br(),
+    html.Br(),
+    html.Br(),
+    html.Br(),
+    html.Br(),
+    html.Br(),
+    html.Br(),
+    html.Br(),
+    html.Br(),
+    html.Br(),
+    html.Br(),
+    html.Br(),
+    html.Br(),
+    html.Br(),
+    html.Br(),
+    html.Br(),
+    html.Br(),
+    html.Br(),
+    html.Br(),
+    html.Br(),
+    html.Br(),
+    html.Br(),
+    html.Br(),
+    html.Br(),
+    html.Br(),
+    html.Br(),
+    html.Br(),
+    html.Br(),
+    html.Br(),
+    html.Br(),
+    html.Br(),
+    html.Br(),
+    html.Br(),
+    html.Br(),
+    html.Br(),
+    html.Br(),
+    html.Br(),
+    html.Br(),
+    html.Br(),
+    html.Br(),
+    html.Br(),
+    html.Br(),
+    html.Br(),
+    html.Br(),
+    html.Br(),
+    html.Br(),
+    html.Br(),
+    html.Br(),
+    html.Br(),
+    html.Br(),
+    html.Br(),
+    html.Br(),
+    html.Br(),
+    html.Br(),
+    html.Br(),
+    html.Br(),
+    html.Br(),
+    html.Br(),
+    html.Br(),
+    html.Br(),
+    html.Br(),
+    html.Br(),
+    html.Br(),
+    html.Br(),
+    html.Br(),
+    html.Br(),
+    html.Br(),
+    html.Br(),
+    html.Br(),
+    html.Br(),
+    html.Br(),
+    html.Br(),
+    html.Br(),
+    html.Br(),
+    html.Br(),
+    html.Br(),
+    html.Br(),
+    html.Br(),
+    html.Br(),
+    html.Br(),
+    html.Br(),
+    html.Br(),
+    html.Br(),
+    html.Br(),
+    html.Br(),
+    html.Br(),
+    html.Br(),
+    html.Br(),
+    html.Br(),
+    html.Br(),
+    html.Br(),
+    html.Br(),
+    html.Br(),
+
+
 ])
+
+
 
 def group_depression(x):
     if x < 1:
@@ -297,9 +575,14 @@ def group_depression(x):
 )
 
 def update_title_details(details_selection):
-    if details_selection == None:
-        return "Prevalence of Depression in all ages"
-    return details_selection
+    if details_selection == 'tab-1':
+        return 'Prevalence of Depression in Age Standardized & All ages'
+    elif  details_selection == 'tab-2':
+        return 'Prevalence of Depression in 4 Age Groups'
+    elif details_selection == 'tab-3':
+        return 'Prevalence of Depression in Males and Females'
+    elif details_selection == 'tab-4':
+        return 'Suicide rate VS. Depression rate'
 
 @app.callback(
     Output("graph_bar", "figure"),
@@ -333,33 +616,49 @@ def get_show_bar(year_value, display_mode):
     fig.update_traces(marker_color='#205EA8')
     return fig
 
+
+#    ['world', 'europe', 'asia', 'africa', 'north america', 'south america'],
 @app.callback(
     Output("graph_map", "figure"),
     Input("year_slider", "value"),
-    Input("region_selection", "value")
+    Input("region_choice", "value")
 )
 
 def update_graph_map(year_value, region_value):
     #print(df[0]['Depression (%)'][0])
     #df[0].sort_values(by='Depression (%)', ascending=False)
-    df[0]['Depression Rate(grouped)'] = df[0]['Depression (%)'].apply(group_depression)
+    df[0]['Depression Rate'] = df[0]['Depression (%)'].apply(group_depression)
     colors = px.colors.qualitative.Set2
     # * Filter the data from the selected year
     df0Filtered = df[0][df[0]['Year'] == year_value]
     # * Update the colored map
-    fig = px.choropleth(df0Filtered, locations='Code', color='Depression Rate(grouped)',
+    if not region_value or 'World' in region_value:
+        region = 'world'
+    else:
+        if len(region_value) > 1:
+            region = 'world'
+        else:
+            if region_value[0] == 'Asia':
+                region = 'asia'
+            elif region_value[0] == 'Europe':
+                region = 'europe'
+            elif region_value[0] == 'Africa':
+                region = 'africa'
+            else:
+                region = 'world'
+    fig = px.choropleth(df0Filtered, locations='Code', color='Depression Rate',
                         #color_continuous_scale='Viridis',
-                        scope=region_value,
+                        scope=region,
                         #color_discrete_sequence=px.colors.sequential.Greens,
                         color_discrete_sequence= ['#FFFFD8', '#ECF8B1', '#C9E9B4', '#7FCDBC', '#41B8C3', '#1D90C1', '#205EA8', '#0C2C85'],
                         #color_discrete_sequence=colors,
-                        category_orders={'Depression Rate(grouped)':['< 1%', '1% ~ 2%', '2% ~ 3%','3% ~ 4%', '4% ~ 5%', '5% ~ 6%', '6% ~ 7%', '7% ~ 8%']},
+                        category_orders={'Depression Rate':['< 1%', '1% ~ 2%', '2% ~ 3%','3% ~ 4%', '4% ~ 5%', '5% ~ 6%', '6% ~ 7%', '7% ~ 8%']},
                         #range_color=(0, 10),
                         hover_name='Entity',
                         #labels={'Depression (%)': 'Depression rate'},
                         hover_data={'Year': True,
                                     'Depression (%)': ':.3f',
-                                    'Depression Rate(grouped)': False,
+                                    'Depression Rate': False,
                                     'Code': False})
     fig.update_layout(margin={'l': 0, 'b': 0, 't': 0, 'r': 0}, hovermode='closest')
     fig.update_layout(legend_traceorder="reversed")
@@ -442,6 +741,13 @@ def line_chart_creator(dff, all_age, country_title):
     fig.update_layout(hovermode='x unified')
 
     fig.update_layout(template="simple_white")
+    fig.update_layout(legend=dict(
+        orientation="h",
+        yanchor="bottom",
+        y=1.02,
+        xanchor="right",
+        x=1
+    ))
     return fig
 
 # @app.callback(
@@ -487,6 +793,13 @@ def age_chart_creator(age_data, country_title):
                     text=country_title)
     fig.update_layout(hovermode='x unified')
     fig.update_layout(template="simple_white")
+    fig.update_layout(legend=dict(
+        orientation="h",
+        yanchor="bottom",
+        y=1.02,
+        xanchor="right",
+        x=1
+    ))
     # fig.update_layout(paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)")
     return fig
 
@@ -527,6 +840,13 @@ def gender_line_creator(all_age_data, gender_data, country_title):
                        text=country_title)
     fig.update_layout(hovermode='x unified')
     fig.update_layout(template="simple_white")
+    fig.update_layout(legend=dict(
+        orientation="h",
+        yanchor="bottom",
+        y=1.02,
+        xanchor="right",
+        x=1
+    ))
     # fig.update_layout(paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)")
     return fig
 
@@ -647,13 +967,13 @@ def suicide_line_creator(all_age_data, suicide_data, country_title):
 # 'Prevalence of Depression in males and females',
 # 'Suicide VS Depression'
 def update_details_graph(clickData, details_selection):
-    if details_selection == 'Prevalence of Depression in all ages':
+    if details_selection == 'tab-1':
         return update_graph_line_chart(clickData)
-    elif details_selection == 'Prevalence of Depression in 4 age groups':
+    elif details_selection == 'tab-2':
         return update_graph_4age(clickData)
-    elif details_selection == 'Prevalence of Depression in males and females':
+    elif details_selection == 'tab-3':
         return update_graph_gender_line(clickData)
-    elif details_selection == 'Suicide VS Depression':
+    elif details_selection == 'tab-4':
         return update_graph_suicide_line(clickData)
     else:
         return update_graph_line_chart(clickData)
