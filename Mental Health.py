@@ -199,8 +199,8 @@ app.layout = \
     html.Div(
         [
             html.H3(
-                'The rate of change in depression rate VS. The rate of change in suicide rate',
-                id='title_scatter_gender',
+                'Suicide rate VS. Depression rate',
+                id='title_scatter_suicide',
                 style={'padding': '2%','textAlign': 'center'}
             ),
             dcc.Graph(id='graph_suicide_depression_scatter',
@@ -226,7 +226,7 @@ app.layout = \
         [
             html.H3(
                 'Global prevalence of depression in males and females',
-                id='title_scatter_suicide',
+                id='title_scatter_gender',
                 style={'padding': '2%','textAlign': 'center'}
             ),
             dcc.Graph(id='graph_gender_scatter',
@@ -294,18 +294,22 @@ app.layout = \
             children=
             [
             dcc.Tab(
+                html.Br(),
                 value='tab-1',
                 label='Prevalence of Depression in Age Standardized & All ages'
             ),
             dcc.Tab(
+                html.Br(),
                 value='tab-2',
                 label='Prevalence of Depression in 4 Age Groups'
             ),
             dcc.Tab(
+                html.Br(),
                 value='tab-3',
                 label='Prevalence of Depression in Males and Females'
             ),
             dcc.Tab(
+                html.Br(),
                 value='tab-4',
                 label='Suicide rate VS. Depression rate'
             ),
@@ -675,7 +679,7 @@ def update_graph_map(year_value, region_value):
 )
 
 def update_title_bar(year_value, mode_switch):
-    title = 'Global ' + str(mode_switch)+ ' 15, ' + str(year_value)
+    title = 'Global Depression Rate, ' + str(mode_switch)+ ' 15, ' + str(year_value)
     return title
 
 
@@ -695,6 +699,15 @@ def update_title_parallel(year_value):
 
 def update_title_scatter_gender(year_value):
     title = 'Global prevalence of depression in males and females, ' + str(year_value)
+    return title
+
+@app.callback(
+    Output("title_scatter_suicide", "children"),
+    Input("year_slider", "value"),
+)
+
+def update_title_scatter_suicide(year_value):
+    title = 'Suicide rate VS. Depression rate, ' + str(year_value)
     return title
 
 @app.callback(
@@ -771,19 +784,27 @@ def age_chart_creator(age_data, country_title):
     # print(list(dff['Depression (%)']))
     fig.add_trace(go.Scatter(x=age_data['Year'], y=age_data['10-14 years old (%)'],
                              mode='lines+markers',
-                             name='10-14 years old (%)'
+                             name='10-14 years old (%)',
+                             marker=dict(color='#2BA02B'),
+                             line=dict(color='#2BA02B')
                              ))
     fig.add_trace(go.Scatter(x=age_data['Year'], y=age_data['15-49 years old (%)'],
                              mode='lines+markers',
-                             name='15-49 years old (%)'
+                             name='15-49 years old (%)',
+                             marker=dict(color='#FF7F0f'),
+                             line=dict(color='#FF7F0f')
                              ))
     fig.add_trace(go.Scatter(x=age_data['Year'], y=age_data['50-69 years old (%)'],
                              mode='lines+markers',
-                             name='50-69 years old (%)'
+                             name='50-69 years old (%)',
+                             marker=dict(color='#1F77B4'),
+                             line=dict(color='#1F77B4')
                              ))
     fig.add_trace(go.Scatter(x=age_data['Year'], y=age_data['70+ years old (%)'],
                              mode='lines+markers',
-                             name='70+ years old (%)'
+                             name='70+ years old (%)',
+                             marker=dict(color='#F6E738'),
+                             line=dict(color='#F6E738')
                              ))
     fig.add_annotation(x=0, y=0, xanchor='left', yanchor='bottom',
                        xref='paper', yref='paper', showarrow=False, align='left',
@@ -1004,18 +1025,18 @@ def get_show_parallel_c(year_value, region_value):
         color='region_id',
         range_color=[0.0, 1.0],
         color_continuous_scale=[
-            (0.0, "#faa25a"), (0.2, "#faa25a"),
-            (0.2, "#b05dfb"), (0.4, "#b05dfb"),
-            (0.4, "#1dcd95"), (0.6, "#1dcd95"),
-            (0.6, "#ea563c"), (0.8, "#ea563c"),
-            (0.8, "#7169fb"), (1.0, "#7169fb"),
+            (0.0, "#00B9E6"), (0.2, "#00B9E6"),
+            (0.2, "#FBA200"), (0.4, "#FBA200"),
+            (0.4, "#E57EAD"), (0.6, "#E57EAD"),
+            (0.6, "#00A177"), (0.8, "#00A177"),
+            (0.8, "#F6E738"), (1.0, "#F6E738"),
         ]
     )
         # showscale=True,
     fig.update_layout(coloraxis_colorbar=dict(
         title="Continent",
         tickvals=[0.9, 0.7, 0.5, 0.3, 0.1],
-        ticktext=["Asia",'Europe','Africa','Americas','Oceania' ],
+        ticktext=["Asia",'Europe','Africa','Oceania','Americas' ],
         lenmode="pixels", len=200,
     ))
     # data['region_id'] = data['region'].map({'Asia': 1, 'Europe': 2, 'Africa': 3,'Oceania':4,'Americas':5})
@@ -1091,12 +1112,13 @@ def get_show_suicide_x_depress(year_value, region_value):
         y = 'Suicide rate (deaths per 100,000 individuals)',
         color='region',
         color_discrete_map={
-            "Asia": "#7169fb",
-            "Europe": "#ea563c",
-            "Africa": "#1dcd95",
-            "Oceania": "#b05dfb",
-            "Americas": "#faa25a",
+            "Asia": "#F6E738",
+            "Europe": "#00A177",
+            "Africa": "#E57EAD",
+            "Oceania": "#FBA200",
+            "Americas": "#00B9E6",
             },
+        opacity=0.65,
         hover_name='Entity')
     # fig.update_traces(selectedpoints=selectedpoints,
     #                   customdata=suicide.Entity,
@@ -1143,13 +1165,14 @@ def get_gender_scatter(year_value,region_value):
         y="Prevalence in females (%)",
         color='region',
         color_discrete_map={
-            "Asia": "#7169fb",
-            "Europe": "#ea563c",
-            "Africa": "#1dcd95",
-            "Oceania": "#b05dfb",
-            "Americas": "#faa25a",
+            "Asia": "#F6E738",
+            "Europe": "#00A177",
+            "Africa": "#E57EAD",
+            "Oceania": "#FBA200",
+            "Americas": "#00B9E6",
         },
-        hover_name= "Entity"
+        hover_name= "Entity",
+        opacity=0.65
         #text= "Entity"
         # color="species",
         # size='petal_length',
