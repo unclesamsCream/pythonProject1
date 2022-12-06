@@ -89,6 +89,7 @@ app.layout = \
             dcc.Checklist(
                 id='region_choice',
                 options=[
+                    # {label}
                     {'label': 'World', 'value': 'World'},
                     {'label': 'Asia', 'value': 'Asia'},
                     {'label': 'Europe', 'value': 'Europe'},
@@ -591,26 +592,38 @@ def update_title_details(details_selection):
 @app.callback(
     Output("graph_bar", "figure"),
     [Input("year_slider", "value"),
+    Input('region_choice', 'value'),
     Input("mode_switch", "value")]
 )
 # * Define the bar chart of sorted data
-def get_show_bar(year_value, display_mode):
-    select_data = df[0][df[0]['Year'] == year_value]
-    select_data.sort_values(by="Depression (%)", inplace=True, ascending=False)
-    if(display_mode == 'Top'):
-        select_data = select_data[0:15]
-        select_data = select_data[::-1]
+def get_show_bar(year_value, region_value, display_mode):
+    select_data = age_data[age_data['Year'] == year_value]
+    data = pd.DataFrame()
+    # print(region_value)
+    if not region_value or 'World' in region_value:
+        data = select_data
     else:
-        select_data = select_data[::-1]
-        select_data = select_data[:15]
+        data = select_data.loc[select_data['region'] == region_value[0]]
+        for index in range(1,len(region_value)):
+            temp = select_data.loc[select_data['region'] == region_value[index]]
+            # pd.set_option('display.max_columns', None)
+            # print("===========",temp)
+            data = pd.concat([data,temp])
+    data.sort_values(by="Age-standardized (%)", inplace=True, ascending=False)
+    if(display_mode == 'Top'):
+        data = data[0:15]
+        data = data[::-1]
+    else:
+        data = data[::-1]
+        data = data[:15]
         #select_data = select_data[::-1]
     #     select_data = select_data[0:15]
     #     select_data = select_data[::-1]
 
     fig = px.bar(
-        select_data,
+        data,
         y = 'Entity',
-        x = 'Depression (%)',
+        x = 'Age-standardized (%)',
         orientation='h',
         #color= 'Depression (%)',
         text_auto='.2f'
