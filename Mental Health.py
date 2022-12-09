@@ -687,49 +687,90 @@ def update_graph_map(year_value, region_value):
     Output("title_bar", "children"),
     [
         Input("year_slider", "value"),
-        Input('mode_switch', 'value')
+        Input('mode_switch', 'value'),
+        Input('region_choice', 'value')
     ]
 )
 
-def update_title_bar(year_value, mode_switch):
-    title = 'Global Depression Rate, ' + str(mode_switch)+ ' 15, ' + str(year_value)
+def update_title_bar(year_value, mode_switch, region_value):
+    # title = 'Global Depression Rate, ' + str(mode_switch)+ ' 15, ' + str(year_value)
+    temp = 'The Depression Rate in '
+    if region_value == [] or 'World' in region_value:
+        return (temp + 'World, '  + str(mode_switch) + ' 15, ' + str(year_value))
+    else:
+        for i in range(len(region_value)):
+            temp += str(region_value[i]) + ', '
+    title = temp  + str(mode_switch) + ' 15, ' + str(year_value)
     return title
 
 
 @app.callback(
     Output("title_parallel", "children"),
     Input("year_slider", "value"),
+    Input('region_choice', 'value')
 )
 
-def update_title_parallel(year_value):
-    title = 'Global share of the population with depression in all age groups, ' + str(year_value)
+def update_title_parallel(year_value, region_value):
+    temp = 'The share of the population with depression in all age groups in '
+    if region_value == [] or 'World' in region_value:
+        return (temp + 'World, ' + str(year_value))
+    else:
+        for i in range(len(region_value)):
+            temp += str(region_value[i]) + ', '
+    title = temp + str(year_value)
+    # title = 'The share of the population with depression in all age groups in {}, {}'.format(region_value, year_value)
     return title
 
 @app.callback(
     Output("title_scatter_gender", "children"),
     Input("year_slider", "value"),
+    Input('region_choice', 'value')
 )
 
-def update_title_scatter_gender(year_value):
-    title = 'Global prevalence of depression in males and females, ' + str(year_value)
+def update_title_scatter_gender(year_value, region_value):
+    # title = 'Global prevalence of depression in males and females, ' + str(year_value)
+    temp = 'The prevalence of depression in males and females in '
+    if region_value == [] or 'World' in region_value:
+        return (temp + 'World, ' + str(year_value))
+    else:
+        for i in range(len(region_value)):
+            temp += str(region_value[i]) + ', '
+    title = temp + str(year_value)
     return title
 
 @app.callback(
     Output("title_scatter_suicide", "children"),
     Input("year_slider", "value"),
+    Input('region_choice', 'value')
 )
 
-def update_title_scatter_suicide(year_value):
-    title = 'Suicide rate VS. Depression rate, ' + str(year_value)
+def update_title_scatter_suicide(year_value, region_value):
+    # title = 'Suicide rate VS. Depression rate, ' + str(year_value)
+    temp = 'Suicide rate VS. Depression rate in '
+    if region_value == [] or 'World' in region_value:
+        return (temp + 'World, ' + str(year_value))
+    else:
+        for i in range(len(region_value)):
+            temp += str(region_value[i]) + ', '
+    title = temp + str(year_value)
     return title
 
 @app.callback(
     Output("title_map_new", "children"),
     Input("year_slider", "value"),
+    Input('region_choice', 'value')
+
 )
 
-def update_title_map(year_value):
-    title = 'Share of the population with depression, ' + str(year_value)
+def update_title_map(year_value, region_value):
+    # title = 'Share of the population with depression, ' + str(year_value)
+    temp = 'Share of the population with depression in '
+    if region_value == [] or 'World' in region_value:
+        return (temp + 'World, ' + str(year_value))
+    else:
+        for i in range(len(region_value)):
+            temp += str(region_value[i]) + ', '
+    title = temp + str(year_value)
     return title
 
 def update_graph_line_chart(clickData):
